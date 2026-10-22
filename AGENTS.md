@@ -70,4 +70,5 @@ This applies to code, comments, docs, commit messages and PR text.
 - Plain, direct, short. Write like a developer. No filler intros or wrap-up summaries, no emoji.
 - Avoid buzzwords and marketing language.
 - Comment only when the reason is not obvious. Match the style of the file you are in.
-- Commit messages are `type: short description`, for example `fix: button focus ring`. Do not add AI attribution or co-author trailers to commits, PRs or code.
+- Commit messages are `type: short description`, for example `fix: button focus ring`. Keep commits and code free of AI attribution and co-author trailers.
+- Disclose AI work in the pull request instead. If an AI agent wrote the change, the PR description says so and names the model and the harness, for example "Written by Claude Opus 5.5 in Claude Code".
