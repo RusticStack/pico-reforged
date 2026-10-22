@@ -1,10 +1,10 @@
 # Contributing to Pico Reforged
 
-Thanks for your interest in Pico Reforged, a fork of Pico CSS v2.1.1 (by Lucas Larroche and contributors, MIT) rewritten in plain modern CSS. It is not the official Pico CSS, so do not use the Pico name or logo for it. Please read this page before opening a [bug report](https://github.com/rusticstack/pico-reforged/issues) or a [pull request](https://github.com/rusticstack/pico-reforged/pulls).
+Thanks for your interest in Pico Reforged, a fork of Pico CSS v2.1.1 (by Lucas Larroche and contributors, MIT) rewritten in plain modern CSS. It is not the official Pico CSS, so do not use the Pico name or logo for it. Please read this page before opening a [bug report](https://github.com/RusticStack/pico-reforged/issues) or a [pull request](https://github.com/RusticStack/pico-reforged/pulls).
 
 ## Bug reports
 
-The issue tracker is the place for bug reports. Please do not use it for personal support requests or feature ideas, use the [discussions](https://github.com/rusticstack/pico-reforged/discussions) for those.
+The issue tracker is the place for bug reports. Please do not use it for personal support requests or feature ideas, use the [discussions](https://github.com/RusticStack/pico-reforged/discussions) for those.
 
 ## Pull requests
 

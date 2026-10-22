@@ -1,6 +1,37 @@
-# Pico Reforged
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-dark.png">
+    <img src=".github/assets/logo-light.png" width="96" alt="Pico Reforged logo: a pair of curly braces around a blue square">
+  </picture>
+</p>
 
-Minimal CSS for semantic HTML, rewritten in plain modern CSS.
+<h1 align="center">Pico Reforged</h1>
+
+<p align="center"><b>Minimal CSS for semantic HTML, rewritten in plain modern CSS.</b><br>
+Write the markup, get a clean, accessible, themeable page. No classes required, no JavaScript.</p>
+
+<p align="center">
+  <a href="https://pico.rusticstack.com"><img src="https://img.shields.io/badge/Docs-pico.rusticstack.com-1779E1?style=for-the-badge" height="40" alt="Read the docs at pico.rusticstack.com"></a>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@rusticstack/pico-reforged"><img src="https://img.shields.io/npm/v/@rusticstack/pico-reforged?style=flat-square&label=npm&color=1779E1" alt="npm version"></a>
+  <a href="https://www.jsdelivr.com/package/npm/@rusticstack/pico-reforged"><img src="https://img.shields.io/jsdelivr/npm/hm/@rusticstack/pico-reforged?style=flat-square&color=2A2A30" alt="jsDelivr hits per month"></a>
+  <img src="https://img.shields.io/badge/pico.min.css-12.2_kB_gzipped-2A2A30?style=flat-square" alt="pico.min.css is 12.2 kB gzipped">
+  <a href="https://github.com/RusticStack/pico-reforged/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/RusticStack/pico-reforged/ci.yml?branch=main&style=flat-square&label=CI" alt="CI status"></a>
+  <a href="LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-2A2A30?style=flat-square" alt="MIT license"></a>
+</p>
+
+<p align="center">
+  <img src=".github/assets/theme-tour.gif" width="800" alt="The dashboard example cycling through the azure, jade, pumpkin, violet, fuchsia and slate themes in light and dark mode, with no change to the markup">
+</p>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/markup-dark.png">
+    <img src=".github/assets/markup-light.png" width="800" alt="Plain HTML on the left (an article with a heading, an email field grouped with a button, a switch and a details element) and the page Pico Reforged renders from it on the right">
+  </picture>
+</p>
 
 Pico Reforged continues [Pico CSS](https://github.com/picocss/pico) v2.1.1, the final upstream release, which is MIT licensed and archived. Pico CSS and its original design are the work of Lucas Larroche and the Pico contributors. This project is a fork with its own name. It is not the official Pico CSS and is not affiliated with it. The Pico CSS name and logo belong to the original project.
 
@@ -189,8 +220,8 @@ Most pages work by swapping the CDN URL. The changes that matter (the browser fl
 
 - Site: [pico.rusticstack.com](https://pico.rusticstack.com)
 - Docs: [architecture](docs/architecture.md), [integrations](docs/integrations.md), [customization](docs/customization.md), [migration](docs/migration.md)
-- Issues: [github.com/rusticstack/pico-reforged/issues](https://github.com/rusticstack/pico-reforged/issues)
-- Contributing: [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md)
+- Issues: [github.com/RusticStack/pico-reforged/issues](https://github.com/RusticStack/pico-reforged/issues), questions and ideas in [discussions](https://github.com/RusticStack/pico-reforged/discussions)
+- Contributing: [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md), [code of conduct](.github/CODE_OF_CONDUCT.md), [security policy](.github/SECURITY.md)
 
 ## License
 
