@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-dark.png">
-    <img src=".github/assets/logo-light.png" width="96" alt="Pico Reforged logo: a pair of curly braces around a blue square">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/RusticStack/pico-reforged/main/.github/assets/logo-dark.png">
+    <img src="https://raw.githubusercontent.com/RusticStack/pico-reforged/main/.github/assets/logo-light.png" width="96" alt="Pico Reforged logo: a pair of curly braces around a blue square">
   </picture>
 </p>
 
@@ -23,13 +23,13 @@ Write the markup, get a clean, accessible, themeable page. No classes required, 
 </p>
 
 <p align="center">
-  <img src=".github/assets/theme-tour.gif" width="800" alt="The dashboard example cycling through the azure, jade, pumpkin, violet, fuchsia and slate themes in light and dark mode, with no change to the markup">
+  <img src="https://raw.githubusercontent.com/RusticStack/pico-reforged/main/.github/assets/theme-tour.gif" width="800" alt="The dashboard example cycling through the azure, jade, pumpkin, violet, fuchsia and slate themes in light and dark mode, with no change to the markup">
 </p>
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/markup-dark.png">
-    <img src=".github/assets/markup-light.png" width="800" alt="Plain HTML on the left (an article with a heading, an email field grouped with a button, a switch and a details element) and the page Pico Reforged renders from it on the right">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/RusticStack/pico-reforged/main/.github/assets/markup-dark.png">
+    <img src="https://raw.githubusercontent.com/RusticStack/pico-reforged/main/.github/assets/markup-light.png" width="800" alt="Plain HTML on the left (an article with a heading, an email field grouped with a button, a switch and a details element) and the page Pico Reforged renders from it on the right">
   </picture>
 </p>
 
@@ -64,7 +64,7 @@ Link a built file from `node_modules/@rusticstack/pico-reforged/css/` or use the
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@rusticstack/pico-reforged@2.0.0/css/pico.min.css"
+  href="https://cdn.jsdelivr.net/npm/@rusticstack/pico-reforged@2.0.1/css/pico.min.css"
 />
 ```
 

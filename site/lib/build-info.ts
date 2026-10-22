@@ -11,7 +11,7 @@ function pkg(): { version: string } {
   for (const file of [join(root, "package.json"), join(process.cwd(), "node_modules", "@rusticstack", "pico-reforged", "package.json")]) {
     if (existsSync(file)) return JSON.parse(readFileSync(file, "utf8"));
   }
-  return { version: "2.0.0" };
+  return { version: "2.0.1" };
 }
 
 export const VERSION = pkg().version;
