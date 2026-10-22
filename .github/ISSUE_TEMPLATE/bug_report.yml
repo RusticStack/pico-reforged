@@ -1,0 +1,70 @@
+name: Bug report
+description: Something in Pico Reforged is broken. For questions about Pico CSS v2.1.1 itself, see the original project.
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please search the [open and closed issues](https://github.com/RusticStack/pico-reforged/issues?q=is%3Aissue) first. Questions go in the [discussions](https://github.com/RusticStack/pico-reforged/discussions/categories/q-a).
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior
+      description: What happens.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What you expected to happen.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Core CSS (layout, content, forms, components)
+        - Extras (tabs, toast, data table and the rest)
+        - Themes and color schemes
+        - CLI, compiler or purge
+        - Vite or PostCSS plugin
+        - Docs site
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: Which file or setup
+      description: The CSS file you load (for example `css/pico.min.css` from the CDN), or the build setup (CLI command, Vite or PostCSS plugin and your `@pico` block). If purging is involved, say whether it is `safe` or `aggressive`.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: repro
+    attributes:
+      label: Reproduction URL
+      description: A minimal reproduction on CodePen, StackBlitz or a small repository. Please do not link your real project.
+      placeholder: https://codepen.io/...
+  - type: input
+    id: version
+    attributes:
+      label: Pico Reforged version
+      placeholder: "2.0.0"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser and version. For build problems also Node, pnpm or npm, and the framework version.
+    validations:
+      required: true
+  - type: checkboxes
+    id: upstream
+    attributes:
+      label: Pico CSS v2.1.1
+      options:
+        - label: I checked whether the same markup also breaks with Pico CSS v2.1.1, and said so above.

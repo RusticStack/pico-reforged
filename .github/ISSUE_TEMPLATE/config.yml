@@ -1,8 +1,14 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Documentation
+    url: https://pico.rusticstack.com/docs
+    about: Guides for every element, theme, extra and build integration.
   - name: Get help
-    url: https://github.com/rusticstack/pico-reforged/discussions/categories/q-a
+    url: https://github.com/RusticStack/pico-reforged/discussions/categories/q-a
     about: If you can't get something to work the way you expect, ask in the discussions.
   - name: Feature request
-    url: https://github.com/rusticstack/pico-reforged/discussions/categories/ideas
+    url: https://github.com/RusticStack/pico-reforged/discussions/categories/ideas
     about: Suggest ideas in the discussions.
+  - name: Security issue
+    url: https://github.com/RusticStack/pico-reforged/security/advisories/new
+    about: Report a vulnerability privately. Please do not open a public issue.
