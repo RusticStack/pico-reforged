@@ -162,7 +162,9 @@ test("package.json ships and exposes the AI files", () => {
     exports: Record<string, unknown>;
     scripts: Record<string, string>;
   };
-  for (const entry of ["ai", "skills", "AGENTS.md"]) assert.ok(pkg.files.includes(entry), entry);
+  for (const entry of ["ai", "skills"]) assert.ok(pkg.files.includes(entry), entry);
+  // AGENTS.md is for contributors, who clone the repository
+  assert.ok(!pkg.files.includes("AGENTS.md"));
   assert.equal(pkg.exports["./tokens.json"], "./ai/tokens.json");
   assert.equal(pkg.exports["./components.json"], "./ai/components.json");
   assert.ok(pkg.scripts["generate:ai"]);
