@@ -3,6 +3,9 @@ contact_links:
   - name: Documentation
     url: https://pico.rusticstack.com/docs
     about: Guides for every element, theme, extra and build integration.
+  - name: Docs site issue
+    url: https://github.com/RusticStack/pico-reforged-website/issues
+    about: Report problems with the documentation website (pico.rusticstack.com), such as broken pages, wrong text or broken live examples.
   - name: Get help
     url: https://github.com/RusticStack/pico-reforged/discussions/categories/q-a
     about: If you can't get something to work the way you expect, ask in the discussions.
