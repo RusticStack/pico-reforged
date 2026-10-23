@@ -15,7 +15,6 @@ export default defineConfig({
       "dist/**",
       "dist-dev*/**",
       "examples/**",
-      "site/**",
       "src/**",
       "test/reference/**",
       "test/visual/report*/**",
@@ -76,8 +75,7 @@ export default defineConfig({
       "test/visual/report*/**",
       "test/visual/extras-report/**",
       "pnpm-lock.yaml",
-      // Not part of the toolchain scope: the docs site, example pages and HTML fixtures.
-      "site/**",
+      // Not part of the toolchain scope: example pages and HTML fixtures.
       "examples/**",
       "**/*.html",
       // Written by scripts/generate.ts. Formatting them would only be undone by the next run.

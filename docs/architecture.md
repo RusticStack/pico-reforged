@@ -45,8 +45,9 @@ test/
   visual/                Playwright screenshot and pixel diff harness, extras.ts for the extras checker
 docs/                    architecture, ADRs, customization, browser support, migration
 examples/                small pages that show usage (CDN, modular, custom theme, popover)
-site/                    documentation website, deployed to pico.rusticstack.com
 ```
+
+The documentation website, https://pico.rusticstack.com, lives in its own repository, [rusticstack/pico-reforged-website](https://github.com/rusticstack/pico-reforged-website). It builds from the published npm package.
 
 Module file names match the v2.1.1 `$modules` keys, so `components/modal` in a config means `src/components/modal.css`.
 
