@@ -10,6 +10,8 @@
 <p align="center"><b>Minimal CSS for semantic HTML, rewritten in plain modern CSS.</b><br>
 Write the markup, get a clean, accessible, themeable page. No classes required, no JavaScript.</p>
 
+<p align="center"><sub>Pico Reforged is an independent fork of Pico CSS v2.1.1 (MIT). It is not affiliated with or endorsed by the Pico CSS project. The Pico CSS name and logo belong to their authors.</sub></p>
+
 <p align="center">
   <a href="https://pico.rusticstack.com"><img src="https://img.shields.io/badge/Docs-pico.rusticstack.com-1779E1?style=for-the-badge" height="40" alt="Read the docs at pico.rusticstack.com"></a>
 </p>
@@ -222,6 +224,10 @@ Most pages work by swapping the CDN URL. The changes that matter (the browser fl
 - Docs: [architecture](docs/architecture.md), [integrations](docs/integrations.md), [customization](docs/customization.md), [migration](docs/migration.md)
 - Issues: [github.com/RusticStack/pico-reforged/issues](https://github.com/RusticStack/pico-reforged/issues), questions and ideas in [discussions](https://github.com/RusticStack/pico-reforged/discussions)
 - Contributing: [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md), [code of conduct](.github/CODE_OF_CONDUCT.md), [security policy](.github/SECURITY.md)
+
+## Disclaimer
+
+Pico Reforged is an independent fork of Pico CSS v2.1.1 (MIT). It is not affiliated with or endorsed by the Pico CSS project. The Pico CSS name and logo belong to their authors.
 
 ## License
 
