@@ -44,7 +44,4 @@ CLAUDE.md
 # Compiled CLI and compiler
 /dist/
 
-# Site
-site/.source/
-site/out/
 *.tsbuildinfo

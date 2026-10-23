@@ -10,6 +10,7 @@ Pico Reforged (`@rusticstack/pico-reforged`) is a fork of Pico CSS v2.1.1 by Luc
 - `scripts/` holds the compiler (`scripts/lib/compiler`), the CLI (`scripts/cli.ts`), the Vite and PostCSS integrations (`scripts/integrations`) and the generators.
 - `css/` is build output with the same file names as v2.1.1. Never edit it by hand.
 - `ai/` and `skills/pico-reforged/` are the files for agents and tools. `docs/` is the written documentation. `test/` has the suites, fixtures and the frozen v2.1.1 reference.
+- The website at https://pico.rusticstack.com is in its own repository, [rusticstack/pico-reforged-website](https://github.com/rusticstack/pico-reforged-website). It builds from the published npm package, and its live examples are copies of `examples/` and some of `test/fixtures/`.
 
 ## Commands
 

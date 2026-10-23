@@ -220,7 +220,7 @@ Most pages work by swapping the CDN URL. The changes that matter (the browser fl
 
 ## Links
 
-- Site: [pico.rusticstack.com](https://pico.rusticstack.com)
+- Site: [pico.rusticstack.com](https://pico.rusticstack.com), source in [rusticstack/pico-reforged-website](https://github.com/rusticstack/pico-reforged-website)
 - Docs: [architecture](docs/architecture.md), [integrations](docs/integrations.md), [customization](docs/customization.md), [migration](docs/migration.md)
 - Issues: [github.com/RusticStack/pico-reforged/issues](https://github.com/RusticStack/pico-reforged/issues), questions and ideas in [discussions](https://github.com/RusticStack/pico-reforged/discussions)
 - Contributing: [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md), [code of conduct](.github/CODE_OF_CONDUCT.md), [security policy](.github/SECURITY.md)

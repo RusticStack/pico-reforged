@@ -11,5 +11,5 @@
 - [ ] `pnpm check`, `pnpm test` and `pnpm test:api` pass
 - [ ] CSS changes: `pnpm build` and `pnpm test:visual` pass, and I looked at the report
 - [ ] Color changes: the contrast probe passes (see `AGENTS.md`)
-- [ ] User-facing changes: the matching page in `docs/` or `site/content/` is updated
+- [ ] User-facing changes: the matching page in `docs/` is updated, and the website docs in [rusticstack/pico-reforged-website](https://github.com/rusticstack/pico-reforged-website) have an issue or pull request
 - [ ] I edited `src/` or `scripts/data/`, not the generated files or `css/`
