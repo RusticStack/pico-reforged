@@ -56,4 +56,4 @@ Before you open a pull request, run `pnpm check`, `pnpm test` and `pnpm test:api
 
 ## Docs and examples
 
-The pages in `examples/` load the built CSS from `../css/`, so run `pnpm build` before you open them. If you change user-facing behavior, update the matching page in `docs/` (`migration.md`, `customization.md`, `integrations.md`).
+The pages in `examples/` load the built CSS from `../css/`, so run `pnpm build` before you open them. If you change user-facing behavior, update the matching page in `docs/` (`migration.md`, `customization.md`, `integrations.md`). The documentation website lives in [rusticstack/pico-reforged-website](https://github.com/RusticStack/pico-reforged-website), so report website problems and send website changes there.
