@@ -1,17 +1,19 @@
-// Usage: node test/visual/contrast-probe.ts <css> ... prints WCAG contrast of key theme pairs in both schemes.
+// Usage: node test/visual/contrast-probe.ts [<css> ...] prints WCAG contrast of key theme pairs in both schemes.
+// Without files it compiles every built-in theme from src/ in memory (`pnpm test:contrast`).
 // Text pairs need 4.5:1. focusRing (the input's focus border and the button's focus outline),
 // fieldBorder need 3:1. Lines below the minimum are printed with LOW and the exit code is 1.
 import { chromium } from "playwright";
+import type { Browser } from "playwright";
 import { readFileSync } from "node:fs";
-const files = process.argv.slice(2);
-const browser = await chromium.launch().catch(() => chromium.launch({ channel: "chrome" }));
-let low = 0;
-for (const f of files) {
+import { THEMES, compile } from "../../scripts/lib/compiler/index.ts";
+
+async function probe(browser: Browser, label: string, css: string): Promise<number> {
+  let low = 0;
   for (const scheme of ["light", "dark"] as const) {
     const ctx = await browser.newContext({ colorScheme: scheme });
     const page = await ctx.newPage();
     await page.setContent(
-      `<!doctype html><html><head><style>${readFileSync(f, "utf8")}</style></head><body><main class="container"><a id="l" href="#">link</a><button id="b">Button</button><button id="s" class="secondary">Sec</button><button id="c" class="contrast">Con</button><input id="i"><mark id="m">mark</mark></main></body></html>`,
+      `<!doctype html><html><head><style>${css}</style></head><body><main class="container"><a id="l" href="#">link</a><button id="b">Button</button><button id="s" class="secondary">Sec</button><button id="c" class="contrast">Con</button><input id="i"><mark id="m">mark</mark></main></body></html>`,
     );
     await page.focus("#i");
     await page.waitForTimeout(500);
@@ -70,13 +72,30 @@ for (const f of files) {
     const lows = Object.entries(out).filter(([k, v]) => Number(v) < (nonText.has(k) ? 3 : 4.5));
     low += lows.length;
     console.log(
-      f.split("/").slice(-2).join("/"),
+      label,
       scheme,
       JSON.stringify(out),
       lows.length ? `LOW ${lows.map(([k]) => k).join(" ")}` : "",
     );
     await ctx.close();
   }
+  return low;
 }
-await browser.close();
+
+const files = process.argv.slice(2);
+const browser = await chromium.launch().catch(() => chromium.launch({ channel: "chrome" }));
+let low = 0;
+try {
+  if (files.length) {
+    for (const f of files) {
+      low += await probe(browser, f.split("/").slice(-2).join("/"), readFileSync(f, "utf8"));
+    }
+  } else {
+    for (const theme of THEMES) {
+      low += await probe(browser, theme, (await compile({ theme })).css);
+    }
+  }
+} finally {
+  await browser.close();
+}
 if (low) process.exit(1);

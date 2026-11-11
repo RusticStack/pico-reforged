@@ -83,6 +83,7 @@
     "test:visual": "node scripts/dev-build.ts && node test/visual/run.ts --ref test/reference/current --gate",
     "test:visual:parity": "node scripts/dev-build.ts && node test/visual/run.ts --ref test/reference/v2.1.1 --suffix parity",
     "test:extras": "node test/visual/extras.ts",
+    "test:contrast": "node test/visual/contrast-probe.ts",
     "lint": "vp lint",
     "fmt": "vp fmt",
     "check": "vp check",
