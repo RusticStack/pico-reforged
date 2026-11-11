@@ -64,14 +64,17 @@ const split = (list: string): Set<string> => new Set(list.split(/\s+/).filter(Bo
 /** Style sheets are the output of the integration, never its input. */
 const STYLE_EXTENSIONS = split("css scss sass less styl stylus pcss postcss");
 
+/** Text formats the automatic scan leaves out by name. An `@source` rule still reads them. */
+const TEXT_ASSET_EXTENSIONS = split("svg map");
+
 const BINARY_EXTENSIONS = split(
   `png jpg jpeg gif webp avif ico icns bmp tif tiff heic heif psd ai eps raw
-   svg woff woff2 ttf otf eot
+   woff woff2 ttf otf eot
    mp3 mp4 m4a m4v webm ogg ogv oga wav flac aac mov avi mkv
    zip gz tgz tar rar 7z br zst bz2 xz
    pdf doc docx xls xlsx ppt pptx odt ods
    exe dll so dylib wasm bin node o a obj class jar pyc
-   sqlite sqlite3 db map lockb DS_Store`,
+   sqlite sqlite3 db lockb DS_Store`,
 );
 
 /** Extensions of files that hold markup or scripts. A scan that finds none of them found no source. */
@@ -162,10 +165,27 @@ export type ScanResult = {
   dynamicHtml: string[];
   /** Files left out because they are over the size limit. */
   skipped: string[];
+  /** Files and folders that exist but could not be read, with the error code. */
+  errors: ScanError[];
 };
 
+export type ScanError = { path: string; code: string };
+
+const errorCode = (error: unknown): string =>
+  (error as NodeJS.ErrnoException | undefined)?.code ?? "UNKNOWN";
+
+/** The warning for files and folders the scan could not read, names the first five. */
+export function unreadableMessage(errors: ScanError[]): string {
+  const shown = errors
+    .slice(0, 5)
+    .map((e) => `${e.path} (${e.code})`)
+    .join(", ");
+  const more = errors.length > 5 ? ` and ${errors.length - 5} more` : "";
+  return `${errors.length} file(s) or folder(s) could not be read, so the names in them were not seen and rules they use may be removed: ${shown}${more}`;
+}
+
 /** Absolute, forward slashes, and an upper case drive letter so equal paths compare equal. */
-const norm = (path: string): string => {
+export const norm = (path: string): string => {
   const posix = toPosix(resolve(path));
   return /^[a-z]:/.test(posix) ? (posix[0] as string).toUpperCase() + posix.slice(1) : posix;
 };
@@ -215,7 +235,7 @@ export function isIgnoredFile(name: string): boolean {
   const lower = name.toLowerCase();
   if (LOCK_FILES.has(lower) || lower.endsWith(".lock") || lower.endsWith(".lockb")) return true;
   const ext = extname(lower).slice(1);
-  return STYLE_EXTENSIONS.has(ext) || BINARY_EXTENSIONS.has(ext);
+  return STYLE_EXTENSIONS.has(ext) || BINARY_EXTENSIONS.has(ext) || TEXT_ASSET_EXTENSIONS.has(ext);
 }
 
 /** True for a file that cannot hold markup or scripts by its extension. */
@@ -248,6 +268,12 @@ export class Scanner {
     // an explicit @source may hold a file as big as a data export
     const explicitMax = Math.max(maxSize, EXPLICIT_MAX_FILE_SIZE);
     const skipped: string[] = [];
+    const errors: ScanError[] = [];
+    // a file that vanished between readdir and read, or a broken link, is not an error
+    const failed = (path: string, error: unknown): void => {
+      const code = errorCode(error);
+      if (code !== "ENOENT") errors.push({ path, code });
+    };
     const skippedAuto: string[] = [];
     const linked = new Set<string>();
     const ignoredPaths = new Set<string>();
@@ -302,7 +328,8 @@ export class Scanner {
       let stat;
       try {
         stat = statSync(path);
-      } catch {
+      } catch (error) {
+        failed(path, error);
         return;
       }
       if (!stat.isFile() || stat.size === 0) return;
@@ -320,8 +347,19 @@ export class Scanner {
       let buffer: Buffer;
       try {
         buffer = readFileSync(path);
-      } catch {
-        return;
+      } catch (error) {
+        // a file another process holds open (EBUSY, EPERM on Windows) is often free a moment later
+        const code = errorCode(error);
+        if (code !== "EBUSY" && code !== "EPERM") {
+          failed(path, error);
+          return;
+        }
+        try {
+          buffer = readFileSync(path);
+        } catch (again) {
+          failed(path, again);
+          return;
+        }
       }
       if (isBinaryBuffer(buffer)) return;
       const text = buffer.toString("utf8");
@@ -345,7 +383,8 @@ export class Scanner {
       let entries: Dirent[];
       try {
         entries = readdirSync(dir, { withFileTypes: true });
-      } catch {
+      } catch (error) {
+        failed(dir, error);
         return;
       }
       let local = stack;
@@ -354,7 +393,10 @@ export class Scanner {
         if (own) local = [...stack, own];
       }
       // a folder a build tool wrote into (a custom distDir) is output, whatever it is called
-      if (depth > 0 && entries.some((e) => OUTPUT_MARKERS.has(e.name) && e.isFile())) return;
+      // In core-only mode the whole tree is build output, so the markers say nothing.
+      if (!coreOnly && depth > 0 && entries.some((e) => OUTPUT_MARKERS.has(e.name) && e.isFile())) {
+        return;
+      }
       entries.sort((a, b) => (a.name < b.name ? -1 : 1));
       for (const entry of entries) {
         const path = norm(join(dir, entry.name));
@@ -365,7 +407,8 @@ export class Scanner {
             const target = statSync(path);
             isDir = target.isDirectory();
             isFile = target.isFile();
-          } catch {
+          } catch (error) {
+            failed(path, error);
             continue;
           }
         }
@@ -394,7 +437,8 @@ export class Scanner {
       let entries: Dirent[];
       try {
         entries = readdirSync(dir, { withFileTypes: true });
-      } catch {
+      } catch (error) {
+        failed(dir, error);
         return;
       }
       for (const entry of entries) {
@@ -406,7 +450,8 @@ export class Scanner {
             const target = statSync(path);
             isDir = target.isDirectory();
             isFile = target.isFile();
-          } catch {
+          } catch (error) {
+            failed(path, error);
             continue;
           }
         }
@@ -453,7 +498,8 @@ export class Scanner {
         let stat;
         try {
           stat = statSync(source.base);
-        } catch {
+        } catch (error) {
+          failed(source.base, error);
           continue;
         }
         if (stat.isDirectory()) walkExplicit(source.base, source.base, undefined, new Set());
@@ -492,7 +538,14 @@ export class Scanner {
     // forget files that are gone, so the cache does not grow with deleted files
     for (const path of this.cache.keys()) if (!found.has(path)) this.cache.delete(path);
     index.files = found.size;
-    return { index, files: [...found.keys()], dirs: [...dirs], dynamicHtml: reasons, skipped };
+    return {
+      index,
+      files: [...found.keys()],
+      dirs: [...dirs],
+      dynamicHtml: reasons,
+      skipped,
+      errors,
+    };
   }
 }
 

@@ -230,3 +230,25 @@ test("glob matching", () => {
   assert.ok(isMatch("src/a.html") && isMatch("src/a/b/c.tsx") && isMatch("README.md"));
   assert.ok(!isMatch("src/a.css") && !isMatch("docs/README.md"));
 });
+
+test("build output markers skip a folder, except in core-only mode where all of it is output", () => {
+  const dir = makeProject({
+    "index.html": '<p class="at-root">x</p>',
+    "sub/BUILD_ID": "abc",
+    "sub/page.html": '<p class="next-to-marker">x</p>',
+  });
+  assert.ok(!scan(dir).index.classes.has("next-to-marker"));
+  assert.ok(scan(dir, { onlyCoreIgnores: true }).index.classes.has("next-to-marker"));
+});
+
+test("@source reads an svg file, the automatic scan does not, binaries stay skipped", () => {
+  const dir = makeProject({
+    "icons/logo.svg": '<svg class="from-svg"><path d="M0 0"/></svg>',
+    "icons/photo.png": '<p class="from-png">x</p>',
+  });
+  assert.ok(!scan(dir).index.classes.has("from-svg"));
+  const sources = resolveSources(dir, [{ pattern: "icons", not: false }]);
+  const { index } = new Scanner({ sources }).scan();
+  assert.ok(index.classes.has("from-svg"));
+  assert.ok(!index.classes.has("from-png"));
+});
