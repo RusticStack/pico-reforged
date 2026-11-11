@@ -85,6 +85,7 @@
     "test:extras": "node test/visual/extras.ts",
     "test:contrast": "node test/visual/contrast-probe.ts",
     "test:size:update": "node test/size/update.ts",
+    "test:scope": "node scripts/dev-build.ts && node test/scope/leak.ts dist-dev/pico.conditional.css",
     "lint": "vp lint",
     "fmt": "vp fmt",
     "check": "vp check",
