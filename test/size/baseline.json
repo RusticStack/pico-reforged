@@ -1,0 +1,17 @@
+{
+  "pico": {
+    "raw": 82796,
+    "gzip": 12371,
+    "brotli": 10870
+  },
+  "classless": {
+    "raw": 72523,
+    "gzip": 11287,
+    "brotli": 9971
+  },
+  "extras": {
+    "raw": 49910,
+    "gzip": 8150,
+    "brotli": 7256
+  }
+}
