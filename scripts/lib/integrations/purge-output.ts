@@ -1,6 +1,15 @@
-import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  existsSync,
+  readFileSync,
+  realpathSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { glob } from "node:fs/promises";
-import { relative, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { browserslistToTargets, Features, transform } from "lightningcss";
 import browserslist from "browserslist";
 import { DEFAULT_TARGETS } from "../compiler/config.ts";
@@ -10,7 +19,7 @@ import { hasEmptyList } from "../compiler/selector.ts";
 import type { Selector } from "../compiler/selector.ts";
 import { scanStatements } from "./css-scan.ts";
 import { toPosix } from "./glob.ts";
-import { Scanner } from "./scanner.ts";
+import { Scanner, unreadableMessage } from "./scanner.ts";
 import type { ResolvedSource } from "./scanner.ts";
 
 export type PurgeOutputOptions = {
@@ -146,14 +155,24 @@ function purgeBody(
   return { body: new TextDecoder().decode(result.code), rules, removed };
 }
 
-/** Names of @keyframes that nothing but their own definition mentions. */
-function findUnusedKeyframes(css: string): Set<string> {
+const escapeName = (name: string): string => name.replace(/[$()*+.?[\\\]^{|-]/g, "\\$&");
+
+/** A pattern that finds `name` as a whole word, the way an animation property names it. */
+const wordPattern = (name: string, flags = ""): RegExp =>
+  new RegExp(String.raw`(?<![\w-])${escapeName(name)}(?![\w-])`, flags);
+
+/**
+ * Names of @keyframes that nothing but their own definition mentions. `usedElsewhere` says when
+ * a name is used outside this stylesheet (another stylesheet, an inline style).
+ */
+function findUnusedKeyframes(css: string, usedElsewhere?: (name: string) => boolean): Set<string> {
   const drop = new Set<string>();
   for (const m of css.matchAll(/@keyframes\s+([\w-]+)/g)) {
-    const name = (m[1] as string).replace(/[$()*+.?[\\\]^{|-]/g, "\\$&");
-    const uses = css.match(new RegExp(String.raw`(?<![\w-])${name}(?![\w-])`, "g"))?.length ?? 0;
+    const raw = m[1] as string;
+    const name = escapeName(raw);
+    const uses = css.match(wordPattern(raw, "g"))?.length ?? 0;
     const defs = css.match(new RegExp(String.raw`@keyframes\s+${name}(?![\w-])`, "g"))?.length ?? 0;
-    if (uses <= defs) drop.add(m[1] as string);
+    if (uses <= defs && !usedElsewhere?.(raw)) drop.add(raw);
   }
   return drop;
 }
@@ -163,6 +182,7 @@ export function purgeStylesheet(
   css: string,
   index: ContentIndex,
   targets = targetsFor(undefined),
+  usedElsewhere?: (name: string) => boolean,
 ): { css: string; rules: number; removed: number; found: boolean } {
   const rewrite = (
     text: string,
@@ -186,7 +206,7 @@ export function purgeStylesheet(
   const first = rewrite(css, index, new Set());
   if (!first.found) return first;
   // A second pass drops the @keyframes whose rules are gone.
-  const drop = findUnusedKeyframes(first.css);
+  const drop = findUnusedKeyframes(first.css, usedElsewhere);
   if (drop.size === 0) return first;
   return { ...first, css: rewrite(first.css, undefined, drop).css };
 }
@@ -231,34 +251,102 @@ export async function purgeOutput(options: PurgeOutputOptions): Promise<PurgeOut
     notes.push("HTML is written at run time in some files, so the common content tags were kept");
   }
 
+  if (scan.errors.length > 0) notes.push(unreadableMessage(scan.errors));
+
   const patterns = options.css?.length ? options.css : ["**/*.css"];
-  const cssFiles = new Set<string>();
+  const matched = new Set<string>();
   for (const pattern of patterns) {
-    for await (const file of glob(pattern, { cwd: dir })) cssFiles.add(resolve(dir, file));
+    for await (const file of glob(pattern, { cwd: dir })) matched.add(resolve(dir, file));
   }
+  const realDir = realpathSync(dir);
+  const outsideDir: string[] = [];
+  const inModules: string[] = [];
+  const notUtf8: string[] = [];
+  // Read everything first: a file is rewritten only when every file could be purged.
+  const inputs: { file: string; real: string; mode: number; bytes: Buffer; text: string }[] = [];
+  const seen = new Set<string>();
+  for (const file of [...matched].toSorted()) {
+    let real: string;
+    try {
+      real = realpathSync(file);
+    } catch {
+      // a broken link, or a file that went away
+      continue;
+    }
+    const rel = toPosix(relative(fold(realDir), fold(real)));
+    if (rel === "" || rel === ".." || rel.startsWith("../") || isAbsolute(rel)) {
+      outsideDir.push(file);
+      continue;
+    }
+    // the scan skips node_modules, so its CSS would be judged against content that never saw it
+    if (rel.split("/").includes("node_modules")) {
+      inModules.push(file);
+      continue;
+    }
+    if (seen.has(fold(real))) continue;
+    seen.add(fold(real));
+    const stat = statSync(real);
+    if (!stat.isFile()) continue;
+    const bytes = readFileSync(real);
+    const text = bytes.toString("utf8");
+    if (!Buffer.from(text, "utf8").equals(bytes)) {
+      notUtf8.push(file);
+      continue;
+    }
+    inputs.push({ file, real, mode: stat.mode, bytes, text });
+  }
+  if (outsideDir.length > 0) {
+    notes.push(`${listed(outsideDir, dir)} outside ${dir} were left alone`);
+  }
+  if (inModules.length > 0) {
+    notes.push(`${listed(inModules, dir)} under node_modules were left alone`);
+  }
+  if (notUtf8.length > 0) {
+    notes.push(`${listed(notUtf8, dir)} are not valid UTF-8 and were left alone`);
+  }
+
   const targets = targetsFor(options.targets);
   const files: PurgedFile[] = [];
-  for (const file of [...cssFiles].toSorted()) {
-    if (!statSync(file).isFile()) continue;
-    const source = readFileSync(file, "utf8");
-    const out = purgeStylesheet(source, index, targets);
-    const entry: PurgedFile = {
-      file: toPosix(relative(dir, file)),
-      before: Buffer.byteLength(source),
+  const writes: { real: string; mode: number; css: string }[] = [];
+  for (const input of inputs) {
+    // a keyframe another stylesheet or an inline style names is still in use
+    const usedElsewhere = (name: string): boolean =>
+      index.classes.has(name) ||
+      inputs.some((other) => other !== input && wordPattern(name).test(other.text));
+    let out: ReturnType<typeof purgeStylesheet>;
+    try {
+      out = purgeStylesheet(input.text, index, targets, usedElsewhere);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `purge: ${toPosix(relative(dir, input.file))}: ${message}. No file was changed`,
+        {
+          cause: error,
+        },
+      );
+    }
+    files.push({
+      file: toPosix(relative(dir, input.file)),
+      before: input.bytes.length,
       after: Buffer.byteLength(out.css),
       rules: out.rules,
       removed: out.removed,
       skipped: !out.found,
-    };
-    files.push(entry);
-    if (out.found && !options.dryRun && out.css !== source) {
+    });
+    if (out.found && out.css !== input.text) {
+      writes.push({ real: input.real, mode: input.mode, css: out.css });
+    }
+  }
+  if (!options.dryRun) {
+    for (const { real, mode, css } of writes) {
       // the map no longer matches the rewritten file, so it goes with its comment
-      const stale = existsSync(`${file}.map`);
-      writeFileSync(
-        file,
-        stale ? out.css.replace(/\n?\/\*# sourceMappingURL=[^*]*\*\/\s*$/, "\n") : out.css,
+      const stale = existsSync(`${real}.map`);
+      writeAtomic(
+        real,
+        stale ? css.replace(/\n?\/\*# sourceMappingURL=[^*]*\*\/\s*$/, "\n") : css,
+        mode,
       );
-      if (stale) rmSync(`${file}.map`, { force: true });
+      if (stale) rmSync(`${real}.map`, { force: true });
     }
   }
   if (files.length === 0) notes.push("no CSS file matched");
@@ -266,4 +354,33 @@ export async function purgeOutput(options: PurgeOutputOptions): Promise<PurgeOut
     notes.push("none of the CSS files holds an @layer pico.* block, so nothing was changed");
   }
   return { files, scanned: scan.files.length, notes };
+}
+
+const fold = (path: string): string => (process.platform === "win32" ? path.toLowerCase() : path);
+
+/** "3 CSS file(s) (a.css, b.css, c.css)", with at most five names. */
+function listed(paths: string[], dir: string): string {
+  const shown = paths
+    .slice(0, 5)
+    .map((p) => toPosix(relative(dir, p)))
+    .join(", ");
+  const more = paths.length > 5 ? ` and ${paths.length - 5} more` : "";
+  return `${paths.length} CSS file(s) (${shown}${more})`;
+}
+
+/** Writes a temp file next to `file` and renames it over, so a failed write leaves no half file. */
+function writeAtomic(file: string, text: string, mode: number): void {
+  const temp = join(dirname(file), `.${basename(file)}.${process.pid}.${Date.now()}.tmp`);
+  try {
+    writeFileSync(temp, text);
+    try {
+      chmodSync(temp, mode);
+    } catch {
+      // the permissions are kept where the platform allows it
+    }
+    renameSync(temp, file);
+  } catch (error) {
+    rmSync(temp, { force: true });
+    throw error;
+  }
 }
