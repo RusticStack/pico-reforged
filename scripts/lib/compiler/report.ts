@@ -1,13 +1,28 @@
 import { brotliCompressSync, gzipSync } from "node:zlib";
 import type { CompileStats } from "./types.ts";
 
-export function sizes(css: string): { bytes: number; gzipBytes: number; brotliBytes: number } {
+type Sizes = { bytes: number; gzipBytes: number; brotliBytes: number };
+
+/**
+ * Adds bytes, gzipBytes and brotliBytes to `target`. The compressed sizes are computed on first
+ * read and then kept: brotli at quality 11 is slow and most callers never look at them. They are
+ * enumerable getters, so a spread or JSON.stringify still carries the numbers.
+ */
+export function withSizes<T extends object>(target: T, css: string): T & Sizes {
   const buf = Buffer.from(css);
-  return {
-    bytes: buf.length,
-    gzipBytes: gzipSync(buf).length,
-    brotliBytes: brotliCompressSync(buf).length,
+  const lazy = (compress: (b: Buffer) => Buffer): PropertyDescriptor => {
+    let value: number | undefined;
+    return {
+      enumerable: true,
+      configurable: true,
+      get: () => (value ??= compress(buf).length),
+    };
   };
+  return Object.defineProperties(target, {
+    bytes: { value: buf.length, enumerable: true, writable: true, configurable: true },
+    gzipBytes: lazy((b) => gzipSync(b)),
+    brotliBytes: lazy((b) => brotliCompressSync(b)),
+  }) as T & Sizes;
 }
 
 const kb = (n: number): string => `${(n / 1024).toFixed(1)} kB`;

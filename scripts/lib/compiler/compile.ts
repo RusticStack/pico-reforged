@@ -3,7 +3,7 @@ import { resolveOptions } from "./config.ts";
 import type { ResolvedOptions } from "./config.ts";
 import { buildIndex } from "./purge.ts";
 import type { ContentIndex } from "./purge.ts";
-import { sizes } from "./report.ts";
+import { withSizes } from "./report.ts";
 import type { CompileOptions, CompileResult } from "./types.ts";
 
 type Built = {
@@ -75,9 +75,10 @@ function finish(
 ): CompileResult {
   const stage = minify ? minifyStage(built, built.options) : lowerStage(built, built.options);
   const css = banner ? `${banner}\n${stage.css}` : stage.css;
+  const stats = withSizes({ ...built.stats }, css);
   const result: CompileResult = {
     css,
-    stats: { ...built.stats, ...sizes(css), durationMs: Math.round(performance.now() - started) },
+    stats: Object.assign(stats, { durationMs: Math.round(performance.now() - started) }),
   };
   if (stage.map) {
     // The banner pushes every mapped line down, one empty mapping segment per banner line.
