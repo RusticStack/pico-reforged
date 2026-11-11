@@ -28,7 +28,7 @@ src/                     CSS source, plain CSS, loadable in a current browser wi
   colors/                color and background utility classes (generated)
 scripts/
   cli.ts                 CLI entry (`pico-reforged build`, `matrix`, `purge`, `themes`, `modules`, `extras`)
-  dev-build.ts           quick azure build into dist-dev/, used by `pnpm test:api`, `pnpm test:visual` and `pnpm dev`
+  dev-build.ts           quick azure build into dist-dev/, used by `pnpm test:api`, `pnpm test:visual`, `pnpm test:scope` and `pnpm dev`
   lib/compiler/          the compiler: config, bundle, transforms, module-tokens, classless, scope, purge, theme, matrix, report
   data/                  palette.json, themes.ts, scheme.ts (the inputs to generation)
   lib/integrations/      root detector, @pico config, project scanner, Engine, post-build purge (see Integrations)
@@ -422,7 +422,7 @@ Notes on the setup:
 - `test/visual/run.ts` loads each fixture with a reference CSS and the new CSS in Chromium at 1280px light, 1280px dark and 375px light, and writes a pixel diff report to `test/visual/report/`. `pnpm test:visual` compares against `test/reference/current`, the reviewed output of this project, with `--gate`: more than 0.05% of differing pixels, or a page height that moved by more than 2px, fails the run. It includes the extras fixtures, loaded with `pico.extras.css`, and the popover fixture. After a deliberate visual change, review the report, then run `node test/visual/freeze.ts` to copy the new `dist-dev` CSS into the baseline. `pnpm test:visual:parity` still compares against v2.1.1, as a report only: since the modern default look ([ADR 0002](adr/0002-modern-default-look.md)) the two differ on purpose. It skips the extras and does not count popover.
 - `pnpm test:contrast` builds every theme from `src/` and prints the contrast of the key pairs in both schemes (buttons, links, muted text on the page, on cards and on menus, secondary text on its fill, the field border and the focus color). It exits 1 when a text pair is under 4.5:1 or a border or focus pair under 3:1. `node test/visual/contrast-probe.ts css/pico.*.css` checks built files instead.
 - `pnpm test:scope` renders `test/fixtures/conditional.html` with no CSS, with `dist-dev/pico.conditional.css` and with the v2.1.1 one, and fails when a computed value outside `.pico` changes in the new build but not in v2.1.1. `node test/scope/selectors.ts [--scope]` prints a selector diff against v2.1.1, a report only.
-- The visual harnesses build readable CSS by default, and selector factoring only runs on minified output. To test the shipped form, build with `node scripts/dev-build.ts --minify --out dist-dev-min` and run `node test/visual/run.ts --new dist-dev-min --suffix min`, or run `node test/visual/extras.ts --minify`. Both builds also take `--targets modern`.
+- The visual harnesses build readable CSS by default, and selector factoring only runs on minified output. To test the shipped form, build with `node scripts/dev-build.ts --minify --out dist-dev-min` and run `node test/visual/run.ts --new dist-dev-min --ref test/reference/current --gate --suffix min`, or run `node test/visual/extras.ts --minify`. Both builds also take `--targets modern`.
 
 ## Conventions for source files
 
