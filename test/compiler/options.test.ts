@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "vite-plus/test";
 import { compile, THEMES } from "../../scripts/lib/compiler/index.ts";
 import { squash } from "./helpers.ts";
@@ -46,13 +47,36 @@ test("theme from hue and chroma", async () => {
   assert.match(css, /--pico-primary: light-dark\(oklch\([\d.]+% [\d.]+ 300\)/);
 });
 
+// Every custom property declaration, keyed by its rule context and name.
+function customProperties(css: string): Map<string, string> {
+  const out = new Map<string, string>();
+  const context: string[] = [];
+  for (const m of css.matchAll(/([^{};]+)\{|\}|(--[\w-]+)\s*:\s*([^;}]*)/g)) {
+    if (m[1] !== undefined) context.push(m[1].trim());
+    else if (m[0] === "}") context.pop();
+    else out.set(`${context.join(" > ")} | ${m[2]}`, (m[3] as string).trim());
+  }
+  return out;
+}
+
 test("every built-in theme compiles and only changes the primary tokens", async () => {
-  const base = await compile({ targets: "chrome 140" });
-  const jade = await compile({ theme: "jade", targets: "chrome 140" });
   assert.equal(THEMES.length, 20);
-  assert.ok(jade.css.includes("--pico-primary-background"));
-  assert.notEqual(jade.css, base.css);
-  assert.equal(jade.css.length > base.css.length * 0.95, true);
+  const base = customProperties((await compile({ targets: "modern" })).css);
+  assert.ok(base.size > 100, `only ${base.size} custom properties found`);
+  for (const theme of THEMES) {
+    // The tokens the generated theme file declares.
+    const file = readFileSync(new URL(`../../src/themes/${theme}.css`, import.meta.url), "utf8");
+    const allowed = new Set([...file.matchAll(/^\s*(--[\w-]+):/gm)].map((m) => m[1]));
+    assert.ok(allowed.has("--pico-primary"), `${theme}: no --pico-primary in its theme file`);
+    const own = customProperties((await compile({ theme, targets: "modern" })).css);
+    assert.deepEqual([...own.keys()], [...base.keys()], `${theme} declares other tokens`);
+    const changed = [...own].filter(([key, value]) => base.get(key) !== value);
+    if (theme !== "azure") assert.ok(changed.length > 0, `${theme} changes nothing`);
+    for (const [key] of changed) {
+      const name = key.slice(key.lastIndexOf("| ") + 2);
+      assert.ok(allowed.has(name), `${theme} changes ${key}`);
+    }
+  }
 });
 
 test("theme from a CSS file layers it over the default", async () => {
