@@ -86,7 +86,8 @@ test("excluding a module drops the custom properties only it reads", async () =>
   assert.match(full.css, /--pico-icon-close:/);
   assert.match(full.css, /--pico-range-thumb-color:/);
   const lean = await compile({ exclude: ["components/modal", "forms/input-range"] });
-  assert.doesNotMatch(lean.css, /--pico-modal-/);
+  // The app-shell extra reads the overlay color, so it stays for the prebuilt extras.
+  assert.doesNotMatch(lean.css, /--pico-modal-(?!overlay-background-color)/);
   assert.doesNotMatch(lean.css, /--pico-icon-close/);
   assert.doesNotMatch(lean.css, /--pico-range-/);
   // Tokens other modules read stay.
@@ -104,7 +105,6 @@ test("a token that a remaining rule still reads is kept", async () => {
   const { css } = await compile({ theme: file, exclude: ["components/card"] });
   assert.match(css, /--pico-card-extra: 1px/);
   assert.doesNotMatch(css, /--pico-card-unused/);
-  assert.doesNotMatch(css, /--pico-card-sectioning/);
 });
 
 test("rules with an empty :is() are dropped", async () => {

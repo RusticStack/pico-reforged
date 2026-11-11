@@ -1,3 +1,6 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { SRC } from "./config.ts";
+
 /**
  * Custom properties that belong to one module, by name prefix. When a module is left out its
  * tokens go with it, unless something that stays still reads them with var(). The prefixes are
@@ -50,6 +53,26 @@ export function referencedTokens(css: string): Set<string> {
   return new Set([...css.matchAll(/var\(\s*(--[\w-]+)/g)].map((m) => m[1] as string));
 }
 
+let extrasReads: Set<string> | undefined;
+
+/**
+ * The --pico-* tokens that any file in src/extras/ reads. The prebuilt extras load on their own
+ * after a core build, so a core build that leaves a module out still has to declare them.
+ */
+export function tokensReadByExtras(): Set<string> {
+  if (!extrasReads) {
+    const dir = `${SRC}/extras`;
+    extrasReads = new Set();
+    for (const file of readdirSync(dir)) {
+      if (!file.endsWith(".css")) continue;
+      for (const name of referencedTokens(readFileSync(`${dir}/${file}`, "utf8"))) {
+        if (name.startsWith("--pico-")) extrasReads.add(name);
+      }
+    }
+  }
+  return extrasReads;
+}
+
 /**
  * A visitor that removes the custom properties starting with one of the prefixes that nothing
  * reads. Counts what it removed so the caller can run it again, since one dropped token can
@@ -61,6 +84,7 @@ export function orphanVisitor(
   removed: { count: number },
 ): { Declaration: { custom: (decl: { name: string }) => [] | undefined } } {
   const used = referencedTokens(css);
+  for (const name of tokensReadByExtras()) used.add(name);
   return {
     Declaration: {
       custom(decl) {

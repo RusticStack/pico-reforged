@@ -102,7 +102,7 @@ The compiler builds a 19-step scale from one color, using the lightness curve of
 pico-reforged build --theme "#e5484d" --minify --out public/pico.css
 ```
 
-In a config file the same is `theme: { color: "#e5484d" }` or `theme: { hue: 25, chroma: 0.19 }`. In a stylesheet with the Vite or PostCSS integration it is `@pico { theme: "#e5484d"; }`. A `theme` can also be the path of a CSS file: the default theme is used first, then your file, so you only write the tokens you change.
+In a config file the same is `theme: { color: "#e5484d" }` or `theme: { hue: 25, chroma: 0.19 }` (OKLCH hue in degrees, chroma from 0 to 0.5). In a stylesheet with the Vite or PostCSS integration it is `@pico { theme: "#e5484d"; }`. A `theme` can also be the path of a CSS file: the default theme is used first, then your file, so you only write the tokens you change.
 
 ### A theme at run time
 
@@ -170,14 +170,16 @@ pico-reforged build \
 
 Put the same options in `pico.config.json`, or a `pico.config.ts` that exports them, and run `pico-reforged build`. The compiler is also a function: `import { compile } from "@rusticstack/pico-reforged/compiler"`.
 
-Excluding a module also drops the custom properties that only it used.
+Paths inside a config file (a theme CSS file, `extrasDir`, the `purge.content` globs) are relative to the folder of the config file, so `pico-reforged build --config site/pico.config.json` works from any folder. Paths given as flags (`--theme ./brand.css`, `--purge "dist/**/*.html"`) are relative to the working directory.
+
+Excluding a module also drops the custom properties that only it used. Tokens that the prebuilt extras in `css/extras/` read stay, so those files still work next to the smaller build.
 
 ## Purge
 
 Purging removes the rules your pages cannot use. Three ways to do it:
 
 - With the Vite or PostCSS integration, `@pico { purge: safe; }` is the default in production. It drops a rule only when a class, an id or an attribute name it needs is not in your sources. `purge: aggressive` also judges tag names and attribute values, and `purge: off` turns it off. Add run-time names with `@source inline("name")` or `safelist`. See [integrations](integrations.md).
-- With the CLI, on a build: `pico-reforged build --purge "site/**/*.html" --safelist modal-is-open`. This judges tags and values too, so list anything a script adds.
+- With the CLI, on a build: `pico-reforged build --purge "site/**/*.html" --safelist modal-is-open`. This judges tags and values too, so list anything a script adds. `--purge site` reads every file in the folder. When no content file can be read, the build fails instead of writing an almost empty stylesheet.
 - On a built site, `pico-reforged purge public` rewrites the Pico rules in the CSS files of the folder, in `safe` mode unless you pass `--mode aggressive`. Use `--dry-run` first.
 
 Custom properties are never purged, and rules outside the Pico layers, which are your own, are never touched.

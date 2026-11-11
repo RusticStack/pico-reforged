@@ -210,7 +210,8 @@ function dropOrphanTokens(stage: Stage, options: ResolvedOptions, excluded: stri
   if (prefixes.length === 0) return stage;
   let current = stage;
   // A dropped token can be the only reader of another, so go on until nothing is left to drop.
-  for (let i = 0; i < 4; i++) {
+  // Each round removes at least one declaration, so the cap is only a guard.
+  for (let i = 0; i < 100; i++) {
     const removed = { count: 0 };
     current = runPass(current, options, orphanVisitor(prefixes, current.css, removed), false);
     if (removed.count === 0) break;

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, test } from "vite-plus/test";
@@ -94,4 +94,36 @@ test("a > or < inside a quoted attribute value does not hide the tag", async () 
   writeFileSync(file, `<div x-data="a > b"><iframe srcdoc="<p>x</p>"></iframe></div>`);
   const { css } = await purge([file]);
   assert.match(squash(css), /iframe/);
+});
+
+test("a table written without tbody keeps the tbody rules", async () => {
+  const file = join(dir, "no-tbody.html");
+  writeFileSync(file, `<table class="striped"><tr><td>x</td></tr></table>`);
+  const out = squash((await purge([file])).css);
+  assert.match(out, /table\.striped tbody tr:nth-child\(odd\)/);
+});
+
+test("a folder as content stands for every file under it", async () => {
+  const site = join(dir, "site");
+  mkdirSync(join(site, "nested"), { recursive: true });
+  writeFileSync(
+    join(site, "nested", "a.html"),
+    `<table class="striped"><tr><td>1</td></tr></table>`,
+  );
+  const { css, stats } = await purge([site]);
+  assert.deepEqual(stats.warnings, []);
+  assert.match(squash(css), /\.striped/);
+});
+
+test("a glob that only matches folders counts as missed", async () => {
+  mkdirSync(join(dir, "only-dirs", "sub-a"), { recursive: true });
+  const pattern = join(dir, "only-dirs", "sub-*").replaceAll("\\", "/");
+  const { stats } = await purge([pattern, page]);
+  assert.deepEqual(stats.warnings, [`purge: no file matches "${pattern}"`]);
+});
+
+test("purge with no content file read fails instead of emptying the sheet", async () => {
+  const missing = join(dir, "does-not-exist", "*.html");
+  await assert.rejects(purge([missing]), /no content file matches .*does-not-exist/);
+  await assert.rejects(purge([join(dir, "only-dirs")]), /no content file matches/);
 });

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { mkdirSync, writeFileSync } from "node:fs";
-import { basename, dirname, resolve } from "node:path";
+import { basename, dirname, isAbsolute, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import {
   buildMatrix,
@@ -28,6 +28,8 @@ Usage
   pico-reforged themes             list the built-in themes
   pico-reforged modules            list the modules that can be excluded
   pico-reforged extras             list the opt-in extras
+  pico-reforged --version, -v      print the version
+  pico-reforged --help, -h         print this help (also after a command)
 
 Purge options (pico-reforged purge <outDir>)
   --css <glob>           stylesheets to rewrite, relative to outDir (default **/*.css, repeatable)
@@ -42,7 +44,8 @@ Purge options (pico-reforged purge <outDir>)
 Only rules inside @layer pico.* change. Other CSS in the files is left as it is.
 
 Build options
-  --config <file>        pico.config.json, .ts or .mjs (found in the working directory if omitted)
+  --config <file>        pico.config.json, .ts or .mjs (found in the working directory if omitted).
+                         Paths in the file are relative to the file's folder
   --entry <name>         pico, classless, colors or extras
   --theme <value>        theme name, a color such as "#e5484d", or the path of a CSS file
   --extras <list>        comma separated extras to add, or "all", for example tabs,badge
@@ -66,6 +69,57 @@ Build options
 `;
 
 const THEME_NAMES = new Set(THEMES);
+
+type ArgsConfig = Parameters<typeof parseArgs>[0] & { options: object };
+
+/**
+ * parseArgs with --help and -h added. Prints the help for --help and the problem for a bad
+ * flag (exit code 2). Returns undefined in both cases, so the command stops.
+ */
+function parseCommand<T extends ArgsConfig>(
+  config: T,
+): ReturnType<typeof parseArgs<T>> | undefined {
+  let parsed;
+  try {
+    parsed = parseArgs({
+      ...config,
+      options: { ...config.options, help: { type: "boolean", short: "h" } },
+    });
+  } catch (error) {
+    console.error(`${(error as Error).message}\nRun pico-reforged --help for the options.`);
+    process.exitCode = 2;
+    return undefined;
+  }
+  if ((parsed.values as { help?: boolean }).help) {
+    console.log(HELP);
+    return undefined;
+  }
+  return parsed as ReturnType<typeof parseArgs<T>>;
+}
+
+/**
+ * Paths in a config file are relative to the file's folder: a theme that is a CSS file, extrasDir
+ * and the purge content globs. A theme name or color stays as it is.
+ */
+function relativeToConfig(options: CompileOptions, file: string): CompileOptions {
+  const base = dirname(resolve(file));
+  const at = (path: string): string =>
+    isAbsolute(path) ? path : resolve(base, path).replaceAll("\\", "/");
+  const out = { ...options };
+  const theme = out.theme;
+  if (
+    typeof theme === "string" &&
+    typeof parseTheme(theme) === "string" &&
+    /\.css$|[\\/]/i.test(theme)
+  ) {
+    out.theme = at(theme);
+  }
+  if (out.extrasDir) out.extrasDir = at(out.extrasDir);
+  if (out.purge && out.purge.content) {
+    out.purge = { ...out.purge, content: out.purge.content.map(at) };
+  }
+  return out;
+}
 
 function parseTheme(value: string): ThemeOption {
   if (THEME_NAMES.has(value)) return value;
@@ -112,7 +166,7 @@ const fromFlags = (values: Record<string, unknown>): CompileOptions => {
 };
 
 async function build(argv: string[]): Promise<void> {
-  const { values } = parseArgs({
+  const parsed = parseCommand({
     args: argv,
     options: {
       config: { type: "string" },
@@ -136,8 +190,12 @@ async function build(argv: string[]): Promise<void> {
       out: { type: "string" },
     },
   });
+  if (!parsed) return;
+  const { values } = parsed;
   const configFile = values.config ?? findConfigFile();
-  const fileOptions = configFile ? await loadConfigFile(configFile) : {};
+  const fileOptions = configFile
+    ? relativeToConfig(await loadConfigFile(configFile), configFile)
+    : {};
   const flagOptions = fromFlags(values);
   const options: CompileOptions = {
     ...fileOptions,
@@ -175,7 +233,7 @@ async function build(argv: string[]): Promise<void> {
 }
 
 async function purgeSite(argv: string[]): Promise<void> {
-  const { values, positionals } = parseArgs({
+  const parsed = parseCommand({
     args: argv,
     allowPositionals: true,
     options: {
@@ -188,6 +246,8 @@ async function purgeSite(argv: string[]): Promise<void> {
       targets: { type: "string" },
     },
   });
+  if (!parsed) return;
+  const { values, positionals } = parsed;
   const dir = positionals[0];
   if (!dir) {
     console.error("purge needs the folder of the built site: pico-reforged purge <outDir>");
@@ -222,7 +282,14 @@ async function purgeSite(argv: string[]): Promise<void> {
 }
 
 async function matrix(argv: string[]): Promise<void> {
-  const outDir = resolve(argv[0] ?? "css");
+  const parsed = parseCommand({ args: argv, allowPositionals: true, options: {} });
+  if (!parsed) return;
+  if (parsed.positionals.length > 1) {
+    console.error("matrix takes one output folder: pico-reforged matrix [outDir]");
+    process.exitCode = 2;
+    return;
+  }
+  const outDir = resolve(parsed.positionals[0] ?? "css");
   const started = performance.now();
   const files = await buildMatrix(outDir);
   console.error(`${formatTable(files.slice(0, 6))}\n...`);
