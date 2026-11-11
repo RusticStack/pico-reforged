@@ -108,7 +108,7 @@ nav {
   &
     li
     input:is([type="date"], [type="datetime-local"], [type="month"], [type="time"], [type="week"]) {
-    padding-left: var(--pico-nav-link-spacing-horizontal);
+    padding-inline-start: var(--pico-nav-link-spacing-horizontal);
   }
 }
 

@@ -21,6 +21,7 @@ details.dropdown {
     height: calc(1rem * var(--pico-line-height, 1.5));
     margin-inline-start: 0.25rem;
     float: right;
+    float: inline-end;
     /* 0.2rem lines the chevron up with a native select */
     transform: rotate(0deg) translateX(0.2rem);
     background-image: var(--pico-icon-chevron);
@@ -78,6 +79,17 @@ details.dropdown {
   }
 }
 
+/* The accordion's RTL chevron rule loses to the one above. Background position and the
+   select alignment nudge have no logical form. */
+:where([dir="rtl"]) details.dropdown {
+  > summary::after,
+  > button::after,
+  > a::after {
+    transform: rotate(0deg) translateX(-0.2rem);
+    background-position: left center;
+  }
+}
+
 /* In nav the dropdown sits inline with the links */
 nav details.dropdown {
   display: inline;
@@ -112,7 +124,7 @@ details.dropdown > summary + ul {
   display: flex;
   z-index: 99;
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   flex-direction: column;
   width: 100%;
   min-width: max-content;
@@ -130,12 +142,6 @@ details.dropdown > summary + ul {
   transition:
     opacity var(--pico-transition),
     transform 0s ease-in-out 1s;
-
-  /* The ul itself needs dir="rtl", an ancestor is not enough */
-  &[dir="rtl"] {
-    right: 0;
-    left: auto;
-  }
 
   li {
     width: 100%;
