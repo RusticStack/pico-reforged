@@ -402,7 +402,7 @@ Notes on the setup:
 - Lint runs the `correctness`, `suspicious` and `perf` categories plus the type-aware rules (`no-floating-promises`, `no-misused-promises`, `await-thenable`, `no-unsafe-*`, `restrict-template-expressions` and others) with `typeCheck` on. The few rules turned off, and why, are commented in `vite.config.ts`.
 - Oxfmt formats `src/**/*.css` except the files `scripts/generate.ts` writes (`tokens/palette.css`, `tokens/scheme.css`, `themes/`, `colors/`). It only changes whitespace: with the formatted sources, the minified output of ten build variants is byte-identical to the output of the unformatted sources, and the readable output differs only in whitespace inside custom property values. Markdown code samples are left as written.
 - Tests moved from `node:test` to Vitest. The assertions still use `node:assert/strict`. The CLI test builds `dist/` with `vp pack` and runs it with `--no-experimental-strip-types`.
-- `pnpm-workspace.yaml` holds `minimumReleaseAgeExclude` entries for Vite+ 1.2.0 and Playwright, which pnpm added because those versions are newer than its release age gate. Remove them once the versions are old enough. No dependency needs a build script: Lightning CSS ships prebuilt binaries as optional packages, so nothing needs approving.
+- No dependency needs a build script: Lightning CSS ships prebuilt binaries as optional packages, so nothing needs approving.
 - `pnpm-workspace.yaml` sets `autoInstallPeers: false`. The package has optional peers (`vite`, `postcss`), and with auto install pnpm adds a real `vite` that conflicts with the Vite+ alias.
 - `.gitattributes` forces LF (`* text=auto eol=lf`) and `.editorconfig` sets the same for editors.
 
