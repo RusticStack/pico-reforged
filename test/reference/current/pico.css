@@ -1967,7 +1967,7 @@
     border-inline-start-color: color-mix(in oklab, currentColor 20%, transparent);
   }
 
-  :is([role="search"], [role="group"]):has(button.secondary:focus-visible, [type="submit"].secondary:focus-visible, [type="button"].secondary:focus-visible, [role="button"].secondary:focus-visible, [type="reset"]:focus-visible) {
+  :is([role="search"], [role="group"]):has([type="reset"]:focus-visible), :is([role="search"], [role="group"]):has(button.secondary:focus-visible, [type="submit"].secondary:focus-visible, [type="button"].secondary:focus-visible, [role="button"].secondary:focus-visible) {
     --pico-group-box-shadow-focus-with-button: 0 0 0 var(--pico-outline-width) var(--pico-background-color),
       0 0 0 calc(var(--pico-outline-width) * 2) var(--pico-secondary-focus);
   }
