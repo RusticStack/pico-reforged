@@ -77,15 +77,21 @@
   }
 }
 
-/* One shared focus ring on the group instead of one per control. Reset looks secondary. */
+/* One shared focus ring on the group instead of one per control */
 [role="search"],
 [role="group"] {
+  /* Reset looks secondary. A rule of its own, so purge can still drop the .secondary one. */
+  &:has([type="reset"]:focus-visible) {
+    --pico-group-box-shadow-focus-with-button:
+      0 0 0 var(--pico-outline-width) var(--pico-background-color),
+      0 0 0 calc(var(--pico-outline-width) * 2) var(--pico-secondary-focus);
+  }
+
   &:has(
     button.secondary:focus-visible,
     [type="submit"].secondary:focus-visible,
     [type="button"].secondary:focus-visible,
-    [role="button"].secondary:focus-visible,
-    [type="reset"]:focus-visible
+    [role="button"].secondary:focus-visible
   ) {
     --pico-group-box-shadow-focus-with-button:
       0 0 0 var(--pico-outline-width) var(--pico-background-color),
