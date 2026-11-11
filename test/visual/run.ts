@@ -1,6 +1,7 @@
-// Usage: node test/visual/run.ts [--new dist-dev] [--ref test/reference/v2.1.1] [--only kitchen-sink] [--suffix name] [--gate]
-// Renders each fixture with the reference CSS and the new CSS, diffs the screenshots and
-// writes test/visual/report[-suffix]/index.html and report.json.
+// Usage: node test/visual/run.ts [--new dist-dev] [--ref test/reference/v2.1.1] [--only kitchen-sink|extras/tabs] [--suffix name] [--gate]
+// Renders each fixture (and, unless the reference is v2.1.1, each extras fixture) with the
+// reference CSS and the new CSS, diffs the screenshots and writes
+// test/visual/report[-suffix]/index.html and report.json.
 // --gate exits 1 when a fixture differs from the reference by more than GATE_MISMATCH percent of
 // its pixels or GATE_HEIGHT pixels of page height. Use it against test/reference/current (the
 // frozen output of this project, see freeze.ts). Against v2.1.1 the report is informational.
@@ -51,8 +52,16 @@ interface Result {
   newHeight?: number;
 }
 
-// Fixtures whose markup the v2.1.1 reference cannot style. Their diff is informational.
-const noReference = new Set(["popover"]);
+const parity = refDir.includes("v2.1.1");
+
+// Fixtures whose markup the v2.1.1 reference cannot style. Their diff is informational. The
+// project's own baseline styles them, so against it they are gated like the rest.
+const noReference = new Set(parity ? ["popover"] : []);
+
+// The extras fixtures (test/fixtures/extras/<name>.html) load every extra through
+// pico.extras.css. v2.1.1 has no extras, so the parity run skips them.
+const extrasDir = join(fixturesDir, "extras");
+const extrasSheets = { __CSS__: "pico.css", __EXTRA__: "pico.extras.css" };
 
 const sheets: Record<string, Record<string, string>> = {
   "kitchen-sink": { __CSS__: "pico.css" },
@@ -82,6 +91,9 @@ const injected = `
 
 const types: Record<string, string> = { ".css": "text/css", ".html": "text/html; charset=utf-8" };
 
+const sheetsFor = (fixture: string): Record<string, string> =>
+  fixture.startsWith("extras/") ? extrasSheets : (sheets[fixture] ?? { __CSS__: "pico.css" });
+
 function startServer(): Promise<http.Server> {
   const server = http.createServer((req, res) => {
     const url = new URL(req.url ?? "/", "http://localhost");
@@ -92,11 +104,14 @@ function startServer(): Promise<http.Server> {
       res.end(body);
     };
     if (kind === "page" && name) {
+      const fixture = parts.slice(1).join("/");
       const side = url.searchParams.get("side") === "new" ? "new" : "ref";
-      const file = join(fixturesDir, `${name}.html`);
-      if (!existsSync(file)) return send(404, "no fixture");
+      const file = join(fixturesDir, `${fixture}.html`);
+      if (!/^(extras\/)?[\w-]+$/.test(fixture) || !existsSync(file)) {
+        return send(404, "no fixture");
+      }
       let html = readFileSync(file, "utf8");
-      for (const [token, css] of Object.entries(sheets[name] ?? { __CSS__: "pico.css" })) {
+      for (const [token, css] of Object.entries(sheetsFor(fixture))) {
         html = html.replaceAll(token, `/${side}/${css}`);
       }
       return send(200, html, types[".html"]);
@@ -183,7 +198,7 @@ img{width:100%;height:auto;border:1px solid #ccc;background:#fff}.err{color:#b00
 </style></head><body>
 <h1>Visual report</h1>
 <p>${
-    refDir.includes("v2.1.1")
+    parity
       ? "Informational: differences from v2.1.1 are expected after the modern restyle."
       : `Gated: more than ${GATE_MISMATCH}% of pixels or ${GATE_HEIGHT}px of height fails.`
   }</p>
@@ -202,10 +217,14 @@ async function main() {
   rmSync(reportDir, { recursive: true, force: true });
   mkdirSync(join(reportDir, "img"), { recursive: true });
 
-  const fixtures = readdirSync(fixturesDir)
-    .filter((f) => f.endsWith(".html"))
-    .map((f) => f.slice(0, -5))
-    .filter((f) => !only || f === only);
+  const html = (dir: string): string[] =>
+    readdirSync(dir)
+      .filter((f) => f.endsWith(".html"))
+      .map((f) => f.slice(0, -5));
+  const fixtures = [
+    ...html(fixturesDir),
+    ...(parity ? [] : html(extrasDir).map((f) => `extras/${f}`)),
+  ].filter((f) => !only || f === only);
   if (!fixtures.length) throw new Error(`no fixtures matched ${only ?? ""}`);
 
   const server = await startServer();
@@ -215,10 +234,10 @@ async function main() {
 
   try {
     for (const fixture of fixtures) {
-      const needed = Object.values(sheets[fixture] ?? { __CSS__: "pico.css" });
+      const needed = Object.values(sheetsFor(fixture));
       const missing = needed.filter((f) => !existsSync(join(newDir, f)));
       for (const mode of modes) {
-        const id = `${fixture}-${mode.name}`;
+        const id = `${fixture.replace("/", "-")}-${mode.name}`;
         if (missing.length) {
           results.push({
             id,
