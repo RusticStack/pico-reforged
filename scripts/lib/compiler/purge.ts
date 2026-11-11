@@ -20,6 +20,8 @@ export type ContentIndex = {
   missed: string[];
   /** Number of files scanned, filled by buildIndex. */
   files: number;
+  /** Files a content glob matched that could not be read, filled by buildIndex. */
+  unreadable?: string[];
   /**
    * true keeps every rule whose type selectors are the only thing missing from the content.
    * Class, id and attribute parts are still checked. For sites whose HTML comes from a CMS,
@@ -339,33 +341,77 @@ export async function buildIndex(options: PurgeOptions): Promise<ContentIndex> {
   const files = new Set<string>();
   for (const pattern of options.content) {
     let matched = 0;
-    const pat =
-      process.platform === "win32" && !existsSync(pattern)
-        ? pattern.replaceAll("\\", "/")
-        : pattern;
-    const found = existsSync(pattern) && statSync(pattern).isFile() ? [pattern] : glob(pat);
+    const stat = existsSync(pattern) ? statSync(pattern) : undefined;
+    let found: AsyncIterable<string> | string[];
+    if (stat?.isFile()) found = [pattern];
+    else {
+      // A folder stands for every file under it.
+      const base = stat?.isDirectory() ? `${pattern.replace(/[\\/]+$/, "")}/**/*` : pattern;
+      found = glob(process.platform === "win32" ? base.replaceAll("\\", "/") : base);
+    }
     for await (const file of found) {
+      if (isDirectory(file)) continue;
       files.add(file);
       matched++;
     }
     if (matched === 0) index.missed.push(pattern);
   }
+  const unreadable: string[] = [];
   for (const file of files) {
     try {
       scanText(index, await readFile(file, "utf8"));
       index.files++;
-    } catch {
-      // directories matched by a glob are skipped
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "EISDIR") unreadable.push(file);
     }
   }
+  if (unreadable.length) index.unreadable = unreadable;
   return index;
+}
+
+function isDirectory(file: string): boolean {
+  try {
+    return statSync(file).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * RegExp.test on a global or sticky regex moves lastIndex, so the next call starts from there
+ * and the answer depends on what was tested before. Those are tested through a copy without g
+ * and y.
+ */
+const stateless = new WeakMap<RegExp, RegExp>();
+
+function plainRegExp(re: RegExp): RegExp {
+  if (!re.global && !re.sticky) return re;
+  let copy = stateless.get(re);
+  if (!copy) {
+    copy = new RegExp(re.source, re.flags.replace(/[gy]/g, ""));
+    stateless.set(re, copy);
+  }
+  return copy;
 }
 
 function safelisted(index: ContentIndex, name: string): boolean {
   const bare = name.replace(/^[.#]/, "");
-  return index.safelist.some((s) =>
-    typeof s === "string" ? s.replace(/^[.#]/, "") === bare : s.test(name) || s.test(bare),
-  );
+  return index.safelist.some((s) => {
+    if (typeof s === "string") return s.replace(/^[.#]/, "") === bare;
+    const re = plainRegExp(s);
+    return re.test(name) || re.test(bare);
+  });
+}
+
+/**
+ * The HTML parser adds tbody to a table whose rows are written without it, and colgroup around
+ * a bare col, so those count as present whenever the source has the tags they wrap.
+ */
+function hasTag(index: ContentIndex, name: string): boolean {
+  if (index.tags.has(name)) return true;
+  if (name === "tbody") return index.tags.has("table") || index.tags.has("tr");
+  if (name === "colgroup") return index.tags.has("col");
+  return false;
 }
 
 function attrMatches(
@@ -411,7 +457,7 @@ function compoundMayMatch(index: ContentIndex, compound: SelectorComponent[]): b
     switch (c.type) {
       case "type":
         if (index.keepTypes || index.conservative) break;
-        if (!index.tags.has(c.name.toLowerCase()) && !safelisted(index, c.name)) return false;
+        if (!hasTag(index, c.name.toLowerCase()) && !safelisted(index, c.name)) return false;
         break;
       case "class":
         if (!index.classes.has(c.name) && !safelisted(index, c.name)) return false;
