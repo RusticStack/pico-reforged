@@ -90,6 +90,9 @@ export function builtInTheme(name: string, header: string): string {
 // requested chroma and clamped to sRGB, then applies the azure step mapping.
 export type ThemeInput = string | { color: string } | { hue: number; chroma: number };
 
+// Well above any sRGB color (about 0.32), low enough to catch a value given in the wrong unit.
+const MAX_CHROMA = 0.5;
+
 export function buildTheme(input: ThemeInput, { name = "custom" } = {}) {
   let hue: number;
   let chroma: number;
@@ -98,14 +101,24 @@ export function buildTheme(input: ThemeInput, { name = "custom" } = {}) {
     const parsed = parse(source.color);
     if (!parsed) throw new Error(`Cannot parse color: ${source.color}`);
     const { c, h } = toOklch(parsed);
+    // Greys have no hue
     chroma = c ?? 0;
     hue = h ?? 0;
+    if (!Number.isFinite(chroma) || !Number.isFinite(hue)) {
+      throw new Error(`Cannot use color ${source.color}: its hue or chroma is not a number`);
+    }
   } else {
     ({ hue, chroma } = source);
+    if (typeof hue !== "number" || typeof chroma !== "number") {
+      throw new Error("Theme needs a color, or both hue and chroma");
+    }
+    if (!Number.isFinite(hue)) throw new Error(`Theme hue must be a finite number, got ${hue}`);
+    // An infinite chroma never fits sRGB, so the gamut search would not end.
+    if (!Number.isFinite(chroma) || chroma < 0 || chroma > MAX_CHROMA) {
+      throw new Error(`Theme chroma must be a number from 0 to ${MAX_CHROMA}, got ${chroma}`);
+    }
   }
-  if (typeof hue !== "number" || typeof chroma !== "number") {
-    throw new Error("Theme needs a color, or both hue and chroma");
-  }
+  hue = ((hue % 360) + 360) % 360;
   const azure = palette.hues.azure as Record<string, Triple>;
   const peak = Math.max(...STEPS.map((s) => (azure[s] as Triple)[1]));
   const scale: Record<number, Triple> = {};
