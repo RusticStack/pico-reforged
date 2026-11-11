@@ -24,25 +24,28 @@ Everything else goes through [Vite+](https://viteplus.dev) (`vp`), which bundles
 
 Edit the CSS in `src/`, never the files in `css/`. The `css/` folder is build output.
 
-| Command            | What it does                                                               |
-| ------------------ | -------------------------------------------------------------------------- |
-| `pnpm dev`         | rebuilds `dist-dev/` when `src/` or `scripts/` change                      |
-| `pnpm build`       | regenerates tokens and themes, then writes every file into `css/`          |
-| `pnpm test`        | runs the Vitest suites in `test/compiler/` and `test/integrations/`        |
-| `pnpm test:api`    | checks that the build still covers the v2.1.1 public surface               |
-| `pnpm test:visual` | renders the fixtures with v2.1.1 and the new CSS and diffs the screenshots |
-| `pnpm test:extras` | screenshots and axe-core checks for each extra fixture                     |
-| `pnpm lint`        | Oxlint with type-aware rules                                               |
-| `pnpm fmt`         | Oxfmt over TypeScript, JSON, Markdown, YAML and `src/**/*.css`             |
-| `pnpm check`       | format check, lint and type check in one go                                |
-| `pnpm typecheck`   | TypeScript 7 type check                                                    |
-| `pnpm run pack`    | builds `dist/cli.js`, the compiler and the Vite and PostCSS plugins        |
+| Command                 | What it does                                                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`              | rebuilds `dist-dev/` when `src/` or `scripts/` change                                                                                       |
+| `pnpm build`            | regenerates tokens, themes and the AI files, then writes every file into `css/`                                                             |
+| `pnpm test`             | runs the Vitest suites in `test/compiler/`, `test/integrations/`, `test/ai/`, `test/generated/`, `test/api/` and `test/size/`               |
+| `pnpm test:api`         | checks that the build still covers the v2.1.1 public surface                                                                                |
+| `pnpm test:visual`      | renders the fixtures and the extras fixtures with the frozen baseline in `test/reference/current` and the new CSS and diffs the screenshots |
+| `pnpm test:extras`      | screenshots and axe-core checks for each extra fixture                                                                                      |
+| `pnpm test:contrast`    | checks text, border and focus contrast for every theme in both schemes                                                                      |
+| `pnpm test:scope`       | checks that `pico.conditional.css` styles nothing outside `.pico` that v2.1.1 did not                                                       |
+| `pnpm test:size:update` | rewrites `test/size/baseline.json` after a reviewed size change                                                                             |
+| `pnpm lint`             | Oxlint with type-aware rules                                                                                                                |
+| `pnpm fmt`              | Oxfmt over TypeScript, JSON, Markdown, YAML and `src/**/*.css`                                                                              |
+| `pnpm check`            | format check, lint and type check in one go                                                                                                 |
+| `pnpm typecheck`        | TypeScript 7 type check                                                                                                                     |
+| `pnpm run pack`         | builds `dist/cli.js`, the compiler and the Vite and PostCSS plugins                                                                         |
 
 Use `pnpm run pack`, not `pnpm pack`: the second one is pnpm's built-in tarball command.
 
 For the visual test you need the Playwright browser once: `pnpm exec playwright install chromium`.
 
-Before you open a pull request, run `pnpm check`, `pnpm test` and `pnpm test:api`. If your change touches CSS, also run `pnpm build` and `pnpm test:visual`, and look at the report in `test/visual/report/`.
+Before you open a pull request, run `pnpm check`, `pnpm test` and `pnpm test:api`. If your change touches CSS, also run `pnpm build` and `pnpm test:visual`, and look at the report in `test/visual/report/`. If it changes colors, run `pnpm test:contrast`. `pnpm test` fails when the minified builds grow more than 2% gzipped: if the growth is intended, run `pnpm test:size:update` and commit `test/size/baseline.json`.
 
 ## Rules for the CSS
 

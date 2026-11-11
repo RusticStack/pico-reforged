@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import { execFileSync, execSync, spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
-import { afterAll, test } from "vite-plus/test";
+import { join, relative, resolve } from "node:path";
+import { afterAll, onTestFinished, test } from "vite-plus/test";
 import { fileURLToPath } from "node:url";
+import { EXTRAS, matrixNames } from "../../scripts/lib/compiler/index.ts";
 
 const root = resolve(fileURLToPath(new URL("../../", import.meta.url)));
 const dir = mkdtempSync(join(tmpdir(), "pico-cli-"));
@@ -12,6 +13,19 @@ afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
 const run = (script: string, args: string[], cwd = root) =>
   spawnSync(process.execPath, [script, ...args], { cwd, encoding: "utf8" });
+
+const ORDER = ["pico.tokens", "pico.theme", "pico.core", "pico.extras", "pico.utilities"];
+
+// The order in which layer names first appear (same helper as in extras.test.ts).
+function layerOrder(css: string): string[] {
+  const seen: string[] = [];
+  for (const m of css.matchAll(/@layer\s+([\w.,\s]+?)\s*[;{]/g)) {
+    for (const name of (m[1] as string).split(",")) {
+      if (!seen.includes(name.trim())) seen.push(name.trim());
+    }
+  }
+  return seen;
+}
 
 test("themes lists the 20 themes", () => {
   const out = run("scripts/cli.ts", ["themes"]);
@@ -131,6 +145,24 @@ test("matrix writes the v2.1.1 file names", () => {
   assert.match(plain, /Lucas Larroche/);
   assert.match(plain, /2026 rusticstack/);
   assert.match(plain, /https:\/\/pico\.rusticstack\.com/);
+
+  // The extras files. This is the only full matrix build in the suite, so the extras checks of
+  // the matrix live here too.
+  const written = readdirSync(out, { recursive: true, withFileTypes: true })
+    .filter((e) => e.isFile())
+    .map((e) => relative(out, join(e.parentPath, e.name)).replaceAll("\\", "/"));
+  assert.deepEqual(written.toSorted(), matrixNames().toSorted());
+  const all = readFileSync(join(out, "pico.extras.css"), "utf8");
+  assert.match(all, /^\/\*!\n \* Pico Reforged/);
+  assert.deepEqual(layerOrder(all), ORDER);
+  for (const extra of EXTRAS) {
+    const own = readFileSync(join(out, "extras", `${extra}.css`), "utf8");
+    assert.deepEqual(layerOrder(own), ORDER, extra);
+  }
+  // The default files never carry an extras block.
+  for (const name of ["pico.css", "pico.classless.css", "pico.conditional.css"]) {
+    assert.doesNotMatch(readFileSync(join(out, name), "utf8"), /@layer pico\.extras\s*\{/);
+  }
 }, 300_000);
 
 test("unknown commands and themes fail", () => {
@@ -140,15 +172,19 @@ test("unknown commands and themes fail", () => {
   assert.match(res.stderr, /Unknown theme/);
 });
 
-test("the packed CLI in dist/ runs as plain JavaScript", () => {
-  execSync("pnpm exec vp pack", { cwd: root, stdio: "pipe" });
-  const cli = join(root, "dist", "cli.js");
+test("the packed CLI runs as plain JavaScript", () => {
+  // Packs into a git-ignored folder inside the repo, so the CLI still finds package.json and
+  // src/ above it and the test leaves dist/ alone.
+  const packDir = join(root, "dist-dev-pack");
+  execSync("pnpm exec vp pack --out-dir dist-dev-pack", { cwd: root, stdio: "pipe" });
+  onTestFinished(() => rmSync(packDir, { recursive: true, force: true }));
+  const cli = join(packDir, "cli.js");
   assert.ok(existsSync(cli));
   const source = readFileSync(cli, "utf8");
   assert.ok(source.startsWith("#!/usr/bin/env node"));
   assert.doesNotMatch(source, /from "\.[^"]*\.ts"/);
-  assert.ok(existsSync(join(root, "dist", "compiler.js")));
-  assert.ok(existsSync(join(root, "dist", "compiler.d.ts")));
+  assert.ok(existsSync(join(packDir, "compiler.js")));
+  assert.ok(existsSync(join(packDir, "compiler.d.ts")));
 
   // Run it without type stripping, the way Node treats code inside node_modules.
   const out = join(dir, "dist-build.css");

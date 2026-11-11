@@ -24,6 +24,8 @@ async function styles(css: string | null) {
   const out = await page.evaluate(() => {
     const res: Record<string, string> = {};
     document.querySelectorAll("[data-unstyled], [data-unstyled] *").forEach((el, i) => {
+      // Inside the scope the sheet is meant to apply.
+      if (el.closest(".pico")) return;
       const cs = getComputedStyle(el);
       for (let k = 0; k < cs.length; k++) {
         const p = cs[k] as string;
@@ -41,11 +43,12 @@ async function styles(css: string | null) {
 const [a, b, c] = [await styles(null), await styles(newCss), await styles(refCss)];
 const leaks = (x: Record<string, string>) => new Set(Object.keys(a).filter((k) => a[k] !== x[k]));
 const [ln, lr] = [leaks(b), leaks(c)];
-// Values may differ (OKLCH tokens, color-scheme); what matters is which properties leak.
-const newOnly = [...new Set([...ln, ...lr])].filter((k) => ln.has(k) !== lr.has(k));
+// Values may differ (OKLCH tokens, color-scheme); what matters is which properties leak. A value
+// that leaks in v2.1.1 but not here is fine.
+const newOnly = [...ln].filter((k) => !lr.has(k));
 console.log(
   `unstyled sibling: ${ln.size} computed values differ from no-CSS (new), ${lr.size} (v2.1.1)`,
 );
-console.log(`leaks differ from v2.1.1 on ${newOnly.length} properties`);
+console.log(`${newOnly.length} values leak in the new build and not in v2.1.1`);
 for (const k of newOnly.slice(0, 40)) console.log(`  ${k}: none ${a[k]}, new ${b[k]}, ref ${c[k]}`);
 process.exit(newOnly.length ? 1 : 0);

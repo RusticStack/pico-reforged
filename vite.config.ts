@@ -19,6 +19,7 @@ export default defineConfig({
       "test/reference/**",
       "test/visual/report*/**",
       "test/visual/extras-report/**",
+      "test/visual/rep-*/**",
     ],
     options: {
       typeAware: true,
@@ -74,6 +75,7 @@ export default defineConfig({
       "test/reference/**",
       "test/visual/report*/**",
       "test/visual/extras-report/**",
+      "test/visual/rep-*/**",
       "pnpm-lock.yaml",
       // Not part of the toolchain scope: example pages and HTML fixtures.
       "examples/**",

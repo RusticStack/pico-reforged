@@ -99,10 +99,11 @@ export function generate(): Record<string, string> {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const root = new URL("../", import.meta.url);
-  for (const [path, content] of Object.entries(generate())) {
+  const files = generate();
+  for (const [path, content] of Object.entries(files)) {
     const target = fileURLToPath(new URL(path, root));
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, content);
   }
-  console.log("generated", Object.keys(generate()).length, "files");
+  console.log("generated", Object.keys(files).length, "files");
 }

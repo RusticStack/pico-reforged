@@ -83,12 +83,16 @@
     "test:visual": "node scripts/dev-build.ts && node test/visual/run.ts --ref test/reference/current --gate",
     "test:visual:parity": "node scripts/dev-build.ts && node test/visual/run.ts --ref test/reference/v2.1.1 --suffix parity",
     "test:extras": "node test/visual/extras.ts",
+    "test:contrast": "node test/visual/contrast-probe.ts",
+    "test:size:update": "node test/size/update.ts",
+    "test:scope": "node scripts/dev-build.ts && node test/scope/leak.ts dist-dev/pico.conditional.css",
     "lint": "vp lint",
     "fmt": "vp fmt",
     "check": "vp check",
     "typecheck": "tsc -p .",
     "pack": "vp pack",
-    "prepack": "pnpm run build && vp pack"
+    "prepack": "pnpm run build && vp pack",
+    "prepublishOnly": "pnpm check && pnpm test && pnpm test:api"
   },
   "keywords": [
     "css",

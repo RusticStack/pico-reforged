@@ -50,7 +50,9 @@ function elementEnd(html: string, start: number): number {
     const next = html.indexOf("<", i);
     if (next === -1) break;
     if (html.startsWith("<!--", next)) {
-      i = html.indexOf("-->", next) + 3;
+      const close = html.indexOf("-->", next + 4);
+      if (close === -1) throw new Error(`Unclosed comment inside <${open.name}>`);
+      i = close + 3;
       continue;
     }
     const tag = tagAt(html, next);
