@@ -65,7 +65,32 @@ export function unquote(text: string): string {
   return t;
 }
 
-/** Splits a value into tokens at spaces and commas, keeping quoted text and parentheses whole. */
+/**
+ * The end (exclusive) of a /regex/flags token that starts at `start`, or -1 when the text there
+ * is not one. A slash inside [...] or after a backslash does not close it. The flags must be
+ * followed by the end of the value, a space or a comma.
+ */
+function regexEnd(value: string, start: number): number {
+  let inClass = false;
+  for (let i = start + 1; i < value.length; i++) {
+    const ch = value[i];
+    if (ch === "\\") i++;
+    else if (inClass) inClass = ch !== "]";
+    else if (ch === "[") inClass = true;
+    else if (ch === "/") {
+      if (i === start + 1) return -1;
+      let end = i + 1;
+      while (end < value.length && /[a-z]/.test(value[end] as string)) end++;
+      return end === value.length || /[\s,]/.test(value[end] as string) ? end : -1;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Splits a value into tokens at spaces and commas, keeping quoted text, parentheses and
+ * /regex/flags whole.
+ */
 export function tokens(value: string): string[] {
   const out: string[] = [];
   let current = "";
@@ -73,7 +98,11 @@ export function tokens(value: string): string[] {
   let quote = "";
   for (let i = 0; i < value.length; i++) {
     const ch = value[i] as string;
-    if (quote) {
+    const regex = ch === "/" && !quote && !current && depth === 0 ? regexEnd(value, i) : -1;
+    if (regex !== -1) {
+      out.push(value.slice(i, regex));
+      i = regex - 1;
+    } else if (quote) {
       current += ch;
       if (ch === "\\") current += value[++i] ?? "";
       else if (ch === quote) quote = "";
@@ -98,8 +127,14 @@ export function tokens(value: string): string[] {
 /** A safelist token: `/^htmx-/` becomes a RegExp, anything else stays a string. */
 function safelistEntry(token: string): string | RegExp {
   const m = /^\/(.+)\/([a-z]*)$/.exec(token);
-  if (m) return new RegExp(m[1] as string, m[2]);
-  return unquote(token);
+  if (!m) return unquote(token);
+  try {
+    return new RegExp(m[1] as string, m[2]);
+  } catch (error) {
+    throw new Error(`@pico: invalid safelist pattern ${token}: ${(error as Error).message}`, {
+      cause: error,
+    });
+  }
 }
 
 const COLOR_VALUE = /^(?:#[0-9a-f]{3,8}|(?:rgb|hsl|oklch|oklab|lab|lch|hwb)a?\(.*\))$/i;
