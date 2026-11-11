@@ -18,9 +18,10 @@ pnpm is the package manager and Vite+ (`vp`) runs tests, lint and format from `v
 
 - `pnpm build`: generate tokens, themes and the AI files, then write the whole file matrix into `css/`. It is slow (several minutes).
 - `pnpm generate` and `pnpm generate:ai`: only the generated sources.
-- `pnpm test`: Vitest. `pnpm test:api`: coverage of the v2.1.1 public surface. `pnpm test:visual`: pixel diff against the frozen baseline in `test/reference/current`, fails above 0.05% or 2px of height (after a reviewed visual change, `node test/visual/freeze.ts` updates it). `pnpm test:visual:parity`: the same diff against v2.1.1, a report only. `pnpm test:extras`: screenshots and axe-core for each extra.
+- `pnpm test`: Vitest. It also fails when the generated sources are stale or when gzip of `pico.min.css`, `pico.classless.min.css` or `pico.extras.min.css` grows more than 2% over `test/size/baseline.json` (after a reviewed size change, `pnpm test:size:update` rewrites it).
+- `pnpm test:api`: coverage of the v2.1.1 public surface on a `dist-dev` build. `pnpm test:visual`: pixel diff of the fixtures and the extras fixtures against the frozen baseline in `test/reference/current`, fails above 0.05% or 2px of height (after a reviewed visual change, `node test/visual/freeze.ts` updates it). `pnpm test:visual:parity`: the same diff against v2.1.1, a report only. `pnpm test:extras`: screenshots and axe-core for each extra. `pnpm test:scope`: checks that `pico.conditional.css` styles nothing outside `.pico` that v2.1.1 did not.
 - The visual and extras harnesses build unminified CSS by default. Selector factoring only runs on minified output, so after compiler changes also run `node scripts/dev-build.ts --minify --out dist-dev-min` with `node test/visual/run.ts --new dist-dev-min --ref test/reference/current --gate`, and `node test/visual/extras.ts --minify`. Both also take `--targets modern`.
-- After changing colors, run `node test/visual/contrast-probe.ts css/pico.css css/pico.<theme>.css ...` over the built theme files. Text needs 4.5:1, field borders and focus colors 3:1.
+- After changing colors, run `pnpm test:contrast`. It builds every theme from `src/` and checks both schemes: text needs 4.5:1, field borders and focus colors 3:1. `node test/visual/contrast-probe.ts <css> ...` checks given files instead.
 - `pnpm check`: format, lint and types. `pnpm fmt`, `pnpm lint`, `pnpm typecheck` run one part. Oxfmt uses `printWidth: 100`.
 - `pnpm run pack`: build `dist/` with tsdown. Plain `pnpm pack` is pnpm's own command.
 
@@ -40,7 +41,7 @@ Browser floor: Chrome and Edge 111, Firefox 128, Safari and iOS 16.4. No legacy 
 
 Do not edit these, change the source and run the generator:
 
-- `src/tokens/palette.css`, `src/tokens/scheme.css`, `src/themes/*.css`, `src/colors/*.css`: from `scripts/data/` (`palette.json`, `scheme.ts`, `themes.ts`) by `scripts/generate.ts`.
+- `src/tokens/palette.css`, `src/tokens/scheme.css`, `src/themes/*.css`, `src/colors/*.css`: from `scripts/data/` (`palette.json`, `scheme.ts`, `themes.ts`) by `scripts/generate.ts`. `test/generated/generated.test.ts` fails when they are stale.
 - `ai/tokens.json`, `ai/components.json`, `skills/pico-reforged/references/components.md` and `extras.md`: by `scripts/generate-ai.ts` from the token CSS, `scripts/data/components.ts`, the modules and the fixtures. `test/ai/ai.test.ts` fails when they are stale or when a module or extra has no entry.
 - `css/`: by `pnpm build`.
 
@@ -54,7 +55,7 @@ Everything else under `src/` is hand-written. A new module or extra needs an ent
 - Keep specificity at the v2.1.1 level or lower (`:where()`), nest no deeper than three levels, and use logical properties so RTL works without overrides.
 - Semantic HTML and ARIA first. An extra uses at most one documented `data-*` hook and needs no class, so it works in the classless build. Motion respects `prefers-reduced-motion`.
 - Each module starts with a one-line comment naming what it styles. The manifest reads that line as the summary, so keep it accurate.
-- Every public selector, class, attribute and `--pico-*` variable of v2.1.1 stays unless `docs/migration.md` lists the removal. `test/api/baseline.json` holds that surface and `pnpm test:api` checks it.
+- Every public selector, class, attribute and `--pico-*` variable of v2.1.1 stays unless `docs/migration.md` lists the removal. `test/api/baseline.json` holds that surface and `pnpm test:api` checks it. A removal also goes into `test/api/removed.json`, the allowlist the check reads; `pnpm test` fails when an entry there is missing from `docs/migration.md`.
 
 ## Adding an extra
 
