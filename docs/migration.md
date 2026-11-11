@@ -23,7 +23,7 @@ In npm projects, replace `@picocss/pico` with `@rusticstack/pico-reforged` in yo
 
 ### API check
 
-`test/api/check.ts` extracts the public surface of the v2.1.1 build (every class, attribute hook, element, `--pico-*` variable and keyframe name) into `test/api/baseline.json` and checks the built `css/pico.css`, `pico.classless.css`, `pico.conditional.css` and `pico.colors.css` against it. All four pass. Nothing from v2.1.1 is missing, and `test/api/removed.json`, the list of deliberate removals, is empty.
+`test/api/check.ts` extracts the public surface of the v2.1.1 build (every class, attribute hook, element, `--pico-*` variable and keyframe name) into `test/api/baseline.json`. `pnpm test:api` builds `dist-dev/` and runs the check on it: `pico.css`, `pico.classless.css`, `pico.conditional.css`, `pico.fluid.classless.css` and `pico.colors.css` are compared against the baseline. All five pass. Allowed removals are read from `test/api/removed.json`, the list of deliberate removals, which is empty: nothing from v2.1.1 is missing.
 
 The build only adds names: the `popover`, `popover=hint` and `role=tooltip` attribute hooks, the `menu` element, and the variables `--pico-container-max-width`, `--pico-form-label-font-weight`, `--pico-card-border-radius`, `--pico-primary-subtle-background` and `--pico-primary-subtle-border` (the tint behind selected and current items). The classless build also gains the dropdown and grid variables, because those rules now read them.
 
