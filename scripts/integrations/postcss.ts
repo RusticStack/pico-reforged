@@ -52,6 +52,8 @@ const pico: PluginCreator<PicoPostcssOptions> = (options = {}) => {
         options.purge === undefined || options.purge === "auto" ? production : options.purge;
       const file = from && !synthetic ? from : `${toPosix(base)}/pico-reforged.css`;
       const pending = result.messages;
+      const fold = (path: string): string =>
+        process.platform === "win32" ? path.toLowerCase() : path;
       const report = (dependencies: {
         config: string[];
         files: string[];
@@ -69,7 +71,7 @@ const pico: PluginCreator<PicoPostcssOptions> = (options = {}) => {
         for (const dir of dependencies.dirs) {
           // The project folder itself is skipped: watching it recursively loops in Next.js when
           // the build output lives there. Its own files are watched one by one above.
-          if (dependencies.root && dir === dependencies.root) continue;
+          if (dependencies.root && fold(dir) === fold(dependencies.root)) continue;
           pending.push({
             type: "dir-dependency",
             plugin: PLUGIN,

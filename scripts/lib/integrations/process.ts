@@ -11,9 +11,11 @@ import { PICO_PACKAGE } from "./pico-config.ts";
 import {
   DEFAULT_MAX_FILE_SIZE,
   findProjectRoot,
+  norm,
   resolveSources,
   Scanner,
   SOURCE_EXTENSIONS,
+  unreadableMessage,
 } from "./scanner.ts";
 import type { ResolvedSource } from "./scanner.ts";
 import type { ScanOptions, ScanResult } from "./scanner.ts";
@@ -119,7 +121,8 @@ export class Engine {
         ignore: [...(input.ignore ?? []), ...nextDistDirs(projectRoot)],
       };
       if (base) scanOptions.root = base;
-      scanRoot = base;
+      // normalized like the scanned folders, so the PostCSS plugin can compare them
+      if (base) scanRoot = norm(base);
       scan = this.scanner(scanOptions).scan();
       dependencies.files.push(...scan.files);
       dependencies.dirs.push(...scan.dirs);
@@ -129,6 +132,7 @@ export class Engine {
           `${scan.skipped.length} file(s) over the size limit were not scanned (${shown}). The limit is ${DEFAULT_MAX_FILE_SIZE / 1024 / 1024} MB, 32 MB for a file named by @source`,
         );
       }
+      if (scan.errors.length > 0) warnings.push(unreadableMessage(scan.errors));
       if (scan.files.length > 0 && !scan.files.some(isSourceFile)) {
         warnings.push(
           `the scan of ${base ?? "the @source paths"} found no markup or script file, so rules used by components elsewhere (another workspace package, node_modules) are removed. Add them with @source or set "purge: off" in @pico`,
@@ -189,7 +193,7 @@ export class Engine {
       dependencies,
     };
     if (purgeInfo) result.purge = purgeInfo;
-    if (scanRoot) result.scanRoot = toPosix(scanRoot);
+    if (scanRoot) result.scanRoot = scanRoot;
     return result;
   }
 
