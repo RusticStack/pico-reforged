@@ -1106,6 +1106,13 @@
     margin-block-start: calc(var(--pico-spacing) * .25);
   }
 
+  @media (forced-colors: active) {
+    :where(input:not([type="submit"], [type="button"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea):focus {
+      outline: var(--pico-outline-width) solid Highlight;
+      outline-offset: 0;
+    }
+  }
+
   [type="checkbox"], [type="radio"] {
     --pico-border-width: .125rem;
   }
@@ -1242,6 +1249,29 @@
 
   [type="checkbox"]:checked[aria-invalid="true"], [type="checkbox"]:checked:active[aria-invalid="true"], [type="checkbox"]:checked:focus[aria-invalid="true"], [type="radio"]:checked[aria-invalid="true"], [type="radio"]:checked:active[aria-invalid="true"], [type="radio"]:checked:focus[aria-invalid="true"], [type="checkbox"][role="switch"]:checked[aria-invalid="true"], [type="checkbox"][role="switch"]:checked:active[aria-invalid="true"], [type="checkbox"][role="switch"]:checked:focus[aria-invalid="true"] {
     --pico-border-color: var(--pico-form-element-invalid-border-color);
+  }
+
+  @media (forced-colors: active) {
+    :where([type="checkbox"]):is(:checked, :indeterminate), :where([type="radio"]):checked {
+      border-color: highlight;
+    }
+
+    :where([type="checkbox"]):is(:checked, :indeterminate) {
+      background-color: highlight;
+    }
+
+    [type="checkbox"][role="switch"]:checked {
+      background-color: highlight;
+      border-color: highlight;
+    }
+
+    [type="checkbox"][role="switch"]:before {
+      background-color: buttontext;
+    }
+
+    [type="checkbox"][role="switch"]:checked:before {
+      background-color: highlighttext;
+    }
   }
 
   input[type="color"] {
@@ -1643,19 +1673,24 @@
     border-inline-start-color: color-mix(in oklab, currentColor 20%, transparent);
   }
 
-  :is([role="search"], [role="group"]):has(button:focus-visible, [type="submit"]:focus-visible, [type="button"]:focus-visible, [role="button"]:focus-visible) {
+  :is([role="search"], [role="group"]):has([type="reset"]:focus-visible) {
+    --pico-group-box-shadow-focus-with-button: 0 0 0 var(--pico-outline-width) var(--pico-background-color),
+      0 0 0 calc(var(--pico-outline-width) * 2) var(--pico-secondary-focus);
+  }
+
+  :is([role="search"], [role="group"]):has(button:focus-visible, [type="submit"]:focus-visible, [type="button"]:focus-visible, [role="button"]:focus-visible, [type="reset"]:focus-visible) {
     --pico-group-box-shadow: var(--pico-group-box-shadow-focus-with-button);
   }
 
-  :is([role="search"], [role="group"]):has(button:focus-visible, [type="submit"]:focus-visible, [type="button"]:focus-visible, [role="button"]:focus-visible) input:not([type="checkbox"], [type="radio"]), :is([role="search"], [role="group"]):has(button:focus-visible, [type="submit"]:focus-visible, [type="button"]:focus-visible, [role="button"]:focus-visible) select {
+  :is([role="search"], [role="group"]):has(button:focus-visible, [type="submit"]:focus-visible, [type="button"]:focus-visible, [role="button"]:focus-visible, [type="reset"]:focus-visible) input:not([type="checkbox"], [type="radio"]), :is([role="search"], [role="group"]):has(button:focus-visible, [type="submit"]:focus-visible, [type="button"]:focus-visible, [role="button"]:focus-visible, [type="reset"]:focus-visible) select {
     border-color: #0000;
   }
 
-  :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"]):focus, select:focus) {
+  :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"], [type="reset"]):focus, select:focus) {
     --pico-group-box-shadow: var(--pico-group-box-shadow-focus-with-input);
   }
 
-  :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"]):focus, select:focus) button, :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"]):focus, select:focus) [type="submit"], :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"]):focus, select:focus) [type="button"], :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"]):focus, select:focus) [role="button"] {
+  :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"], [type="reset"]):focus, select:focus) button, :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"], [type="reset"]):focus, select:focus) [type="submit"], :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"], [type="reset"]):focus, select:focus) [type="button"], :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"], [type="reset"]):focus, select:focus) [role="button"] {
     --pico-button-box-shadow: 0 0 0 var(--pico-border-width) var(--pico-primary-border);
     --pico-button-hover-box-shadow: 0 0 0 var(--pico-border-width)
         var(--pico-primary-hover-border);
@@ -1664,6 +1699,13 @@
   :is([role="search"], [role="group"]) button:focus, :is([role="search"], [role="group"]) [type="submit"]:focus, :is([role="search"], [role="group"]) [type="reset"]:focus, :is([role="search"], [role="group"]) [type="button"]:focus, :is([role="search"], [role="group"]) [role="button"]:focus {
     box-shadow: none;
     outline: none;
+  }
+
+  @media (forced-colors: active) {
+    :where([role="search"], [role="group"]):where(:has(button:focus-visible, [type="submit"]:focus-visible, [type="reset"]:focus-visible, [type="button"]:focus-visible, [role="button"]:focus-visible)) {
+      outline: var(--pico-outline-width) solid Highlight;
+      outline-offset: var(--pico-outline-width);
+    }
   }
 
   [role="search"] > :first-child {
@@ -1920,7 +1962,7 @@
   }
 
   nav li input:is([type="date"], [type="datetime-local"], [type="month"], [type="time"], [type="week"]) {
-    padding-left: var(--pico-nav-link-spacing-horizontal);
+    padding-inline-start: var(--pico-nav-link-spacing-horizontal);
   }
 
   nav[aria-label="breadcrumb"] {

@@ -441,8 +441,8 @@
     @supports (transition-behavior: allow-discrete) {
       body[data-app-shell] > aside[popover] {
         transition: opacity var(--pico-transition),
-            display var(--pico-transition) allow-discrete,
-            overlay var(--pico-transition) allow-discrete;
+        display var(--pico-transition) allow-discrete,
+        overlay var(--pico-transition) allow-discrete;
       }
 
       body[data-app-shell] > aside[popover]:not(:popover-open) {

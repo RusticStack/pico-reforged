@@ -476,6 +476,12 @@
     --pico-badge-warning-color: var(--lightningcss-light, oklch(45% .097 75)) var(--lightningcss-dark, oklch(82% .097 75));
     --pico-badge-danger-background-color: oklch(58% .18 25 / .14);
     --pico-badge-danger-color: var(--lightningcss-light, oklch(42% .13 25)) var(--lightningcss-dark, oklch(75% .117 25));
+    --pico-badge-success-solid-background-color: oklch(50% .11 165);
+    --pico-badge-success-solid-color: oklch(100% 0 0);
+    --pico-badge-warning-solid-background-color: oklch(80% .15 75);
+    --pico-badge-warning-solid-color: oklch(20% .02 75);
+    --pico-badge-danger-solid-background-color: oklch(54% .19 25);
+    --pico-badge-danger-solid-color: oklch(100% 0 0);
   }
 
   [data-badge] {
@@ -569,48 +575,50 @@
     vertical-align: .1em;
   }
 
-  :is(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline) {
+  :where(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline) {
     --pico-badge-ring-color: var(--pico-primary-inverse);
   }
 
-  :is(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline).secondary {
+  :where(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline).secondary {
     --pico-badge-ring-color: var(--pico-secondary-inverse);
   }
 
-  :is(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline).contrast {
+  :where(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline).contrast {
     --pico-badge-ring-color: var(--pico-contrast-inverse);
   }
 
-  :is(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline) > [data-badge]:not([data-badge="success"], [data-badge="warning"], [data-badge="danger"]) {
+  :where(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline) > [data-badge]:not([data-badge="success"], [data-badge="warning"], [data-badge="danger"]) {
     --pico-badge-background-color: var(--pico-badge-ring-color);
     --pico-badge-color: var(--pico-primary-background);
   }
 
-  :is(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline).secondary > [data-badge]:not([data-badge="success"], [data-badge="warning"], [data-badge="danger"]) {
+  :where(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline).secondary > [data-badge]:not([data-badge="success"], [data-badge="warning"], [data-badge="danger"]) {
     --pico-badge-color: var(--pico-secondary-background);
   }
 
-  :is(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline).contrast > [data-badge]:not([data-badge="success"], [data-badge="warning"], [data-badge="danger"]) {
+  :where(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline).contrast > [data-badge]:not([data-badge="success"], [data-badge="warning"], [data-badge="danger"]) {
     --pico-badge-color: var(--pico-contrast-background);
   }
 
-  :is(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline) > [data-badge]:is([data-badge="success"], [data-badge="warning"], [data-badge="danger"]) {
+  :where(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline) > [data-badge]:is([data-badge="success"], [data-badge="warning"], [data-badge="danger"]) {
     background-color: var(--_badge-solid);
     box-shadow: 0 0 0 .125rem var(--pico-badge-ring-color);
-    color: var(--_badge-solid-color, oklch(100% 0 0));
+    color: var(--_badge-solid-color);
   }
 
-  :is(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline) > [data-badge="success"] {
-    --_badge-solid: oklch(50% .11 165);
+  :where(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline) > [data-badge="success"] {
+    --_badge-solid: var(--pico-badge-success-solid-background-color);
+    --_badge-solid-color: var(--pico-badge-success-solid-color);
   }
 
-  :is(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline) > [data-badge="warning"] {
-    --_badge-solid: oklch(80% .15 75);
-    --_badge-solid-color: oklch(20% .02 75);
+  :where(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline) > [data-badge="warning"] {
+    --_badge-solid: var(--pico-badge-warning-solid-background-color);
+    --_badge-solid-color: var(--pico-badge-warning-solid-color);
   }
 
-  :is(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline) > [data-badge="danger"] {
-    --_badge-solid: oklch(54% .19 25);
+  :where(button, [role="button"], input[type="submit"], input[type="button"]):not(.outline) > [data-badge="danger"] {
+    --_badge-solid: var(--pico-badge-danger-solid-background-color);
+    --_badge-solid-color: var(--pico-badge-danger-solid-color);
   }
 
   li:has( > [data-badge]:empty:first-child) {
@@ -1318,8 +1326,8 @@
     @supports (transition-behavior: allow-discrete) {
       body[data-app-shell] > aside[popover] {
         transition: opacity var(--pico-transition),
-            display var(--pico-transition) allow-discrete,
-            overlay var(--pico-transition) allow-discrete;
+        display var(--pico-transition) allow-discrete,
+        overlay var(--pico-transition) allow-discrete;
       }
 
       body[data-app-shell] > aside[popover]:not(:popover-open) {
@@ -1802,6 +1810,34 @@
     inset-inline: calc((var(--pico-stepper-marker-size) - var(--pico-stepper-line-width)) / 2) auto;
     block-size: auto;
     inline-size: var(--pico-stepper-line-width);
+  }
+
+  @media (forced-colors: active) {
+    ol[data-stepper] > li {
+      --_fc-outline: var(--pico-stepper-line-width) solid CanvasText;
+      --_fc-offset: calc(var(--pico-stepper-line-width) * -1);
+      --_fc-adjust: auto;
+      --_line-color: CanvasText;
+    }
+
+    ol[data-stepper] > li:has( ~ li[aria-current="step"],  ~ li > [aria-current="step"]) {
+      --_fc-adjust: none;
+      --_marker-background: Highlight;
+      --_marker-color: Highlight;
+      --_line-color: Highlight;
+      --_fc-outline: var(--pico-stepper-line-width) solid Highlight;
+    }
+
+    ol[data-stepper] > li[aria-current="step"], ol[data-stepper] > li:has( > [aria-current="step"]) {
+      --_fc-outline: var(--pico-stepper-ring-width) solid Highlight;
+      --_fc-offset: var(--pico-stepper-ring-width);
+    }
+
+    ol[data-stepper] > li > [aria-hidden="true"], ol[data-stepper] > li > a > [aria-hidden="true"] {
+      outline: var(--_fc-outline);
+      outline-offset: var(--_fc-offset);
+      forced-color-adjust: var(--_fc-adjust);
+    }
   }
 
   @media (width < 576px) {

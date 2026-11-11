@@ -1106,6 +1106,13 @@
     margin-block-start: calc(var(--pico-spacing) * .25);
   }
 
+  @media (forced-colors: active) {
+    .pico :where(input:not([type="submit"], [type="button"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea):focus {
+      outline: var(--pico-outline-width) solid Highlight;
+      outline-offset: 0;
+    }
+  }
+
   .pico [type="checkbox"], .pico [type="radio"] {
     --pico-border-width: .125rem;
   }
@@ -1242,6 +1249,29 @@
 
   .pico [type="checkbox"]:checked[aria-invalid="true"], .pico [type="checkbox"]:checked:active[aria-invalid="true"], .pico [type="checkbox"]:checked:focus[aria-invalid="true"], .pico [type="radio"]:checked[aria-invalid="true"], .pico [type="radio"]:checked:active[aria-invalid="true"], .pico [type="radio"]:checked:focus[aria-invalid="true"], .pico [type="checkbox"][role="switch"]:checked[aria-invalid="true"], .pico [type="checkbox"][role="switch"]:checked:active[aria-invalid="true"], .pico [type="checkbox"][role="switch"]:checked:focus[aria-invalid="true"] {
     --pico-border-color: var(--pico-form-element-invalid-border-color);
+  }
+
+  @media (forced-colors: active) {
+    .pico :where([type="checkbox"]):is(:checked, :indeterminate), .pico :where([type="radio"]):checked {
+      border-color: highlight;
+    }
+
+    .pico :where([type="checkbox"]):is(:checked, :indeterminate) {
+      background-color: highlight;
+    }
+
+    .pico [type="checkbox"][role="switch"]:checked {
+      background-color: highlight;
+      border-color: highlight;
+    }
+
+    .pico [type="checkbox"][role="switch"]:before {
+      background-color: buttontext;
+    }
+
+    .pico [type="checkbox"][role="switch"]:checked:before {
+      background-color: highlighttext;
+    }
   }
 
   .pico input[type="color"] {
@@ -1643,19 +1673,24 @@
     border-inline-start-color: color-mix(in oklab, currentColor 20%, transparent);
   }
 
-  .pico :is([role="search"], [role="group"]):has(button:focus-visible, [type="submit"]:focus-visible, [type="button"]:focus-visible, [role="button"]:focus-visible) {
+  .pico :is([role="search"], [role="group"]):has([type="reset"]:focus-visible) {
+    --pico-group-box-shadow-focus-with-button: 0 0 0 var(--pico-outline-width) var(--pico-background-color),
+      0 0 0 calc(var(--pico-outline-width) * 2) var(--pico-secondary-focus);
+  }
+
+  .pico :is([role="search"], [role="group"]):has(button:focus-visible, [type="submit"]:focus-visible, [type="button"]:focus-visible, [role="button"]:focus-visible, [type="reset"]:focus-visible) {
     --pico-group-box-shadow: var(--pico-group-box-shadow-focus-with-button);
   }
 
-  .pico :is([role="search"], [role="group"]):has(button:focus-visible, [type="submit"]:focus-visible, [type="button"]:focus-visible, [role="button"]:focus-visible) input:not([type="checkbox"], [type="radio"]), .pico :is([role="search"], [role="group"]):has(button:focus-visible, [type="submit"]:focus-visible, [type="button"]:focus-visible, [role="button"]:focus-visible) select {
+  .pico :is([role="search"], [role="group"]):has(button:focus-visible, [type="submit"]:focus-visible, [type="button"]:focus-visible, [role="button"]:focus-visible, [type="reset"]:focus-visible) input:not([type="checkbox"], [type="radio"]), .pico :is([role="search"], [role="group"]):has(button:focus-visible, [type="submit"]:focus-visible, [type="button"]:focus-visible, [role="button"]:focus-visible, [type="reset"]:focus-visible) select {
     border-color: #0000;
   }
 
-  .pico :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"]):focus, select:focus) {
+  .pico :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"], [type="reset"]):focus, select:focus) {
     --pico-group-box-shadow: var(--pico-group-box-shadow-focus-with-input);
   }
 
-  .pico :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"]):focus, select:focus) button, .pico :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"]):focus, select:focus) [type="submit"], .pico :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"]):focus, select:focus) [type="button"], .pico :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"]):focus, select:focus) [role="button"] {
+  .pico :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"], [type="reset"]):focus, select:focus) button, .pico :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"], [type="reset"]):focus, select:focus) [type="submit"], .pico :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"], [type="reset"]):focus, select:focus) [type="button"], .pico :is([role="search"], [role="group"]):has(input:not([type="submit"], [type="button"], [type="reset"]):focus, select:focus) [role="button"] {
     --pico-button-box-shadow: 0 0 0 var(--pico-border-width) var(--pico-primary-border);
     --pico-button-hover-box-shadow: 0 0 0 var(--pico-border-width)
         var(--pico-primary-hover-border);
@@ -1664,6 +1699,13 @@
   .pico :is([role="search"], [role="group"]) button:focus, .pico :is([role="search"], [role="group"]) [type="submit"]:focus, .pico :is([role="search"], [role="group"]) [type="reset"]:focus, .pico :is([role="search"], [role="group"]) [type="button"]:focus, .pico :is([role="search"], [role="group"]) [role="button"]:focus {
     box-shadow: none;
     outline: none;
+  }
+
+  @media (forced-colors: active) {
+    .pico :where([role="search"], [role="group"]):where(:has(button:focus-visible, [type="submit"]:focus-visible, [type="reset"]:focus-visible, [type="button"]:focus-visible, [role="button"]:focus-visible)) {
+      outline: var(--pico-outline-width) solid Highlight;
+      outline-offset: var(--pico-outline-width);
+    }
   }
 
   .pico [role="search"] > :first-child {
@@ -1920,7 +1962,7 @@
   }
 
   .pico nav li input:is([type="date"], [type="datetime-local"], [type="month"], [type="time"], [type="week"]) {
-    padding-left: var(--pico-nav-link-spacing-horizontal);
+    padding-inline-start: var(--pico-nav-link-spacing-horizontal);
   }
 
   .pico nav[aria-label="breadcrumb"] {
