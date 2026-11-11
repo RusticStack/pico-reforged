@@ -2,19 +2,32 @@
 // dist-dev/ (or --out <folder>), or minified with --minify. The full file set comes from
 // `npm run build`.
 import { mkdirSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { compile } from "./lib/compiler/index.ts";
 import type { CompileOptions } from "./lib/compiler/index.ts";
 
-const root = new URL("../", import.meta.url);
-const outArg = process.argv.indexOf("--out");
-const outName = outArg > -1 ? process.argv[outArg + 1] : "dist-dev";
-const outDir = fileURLToPath(new URL(`${outName}/`, root));
+const root = fileURLToPath(new URL("../", import.meta.url));
+
+function flag(name: string): string | undefined {
+  const at = process.argv.indexOf(name);
+  if (at === -1) return undefined;
+  const value = process.argv[at + 1];
+  if (!value || value.startsWith("--")) {
+    console.error(`${name} needs a value`);
+    process.exit(2);
+  }
+  return value;
+}
+
+// A relative --out is taken from the repository root, an absolute one as it is.
+const outName = flag("--out") ?? "dist-dev";
+const outDir = resolve(root, outName);
 mkdirSync(outDir, { recursive: true });
 
 // --targets <query|modern> builds for another floor, to run the visual tests against it.
-const targetsArg = process.argv.indexOf("--targets");
-const targets = targetsArg > -1 ? { targets: process.argv[targetsArg + 1] as string } : {};
+const targetsValue = flag("--targets");
+const targets = targetsValue ? { targets: targetsValue } : {};
 // --minify runs the minify pass too (selector factoring only happens there).
 const minify = process.argv.includes("--minify");
 
@@ -29,6 +42,6 @@ const files: Record<string, CompileOptions> = {
 
 for (const [name, options] of Object.entries(files)) {
   const { css } = await compile({ ...options, ...targets, minify });
-  writeFileSync(outDir + name, css);
+  writeFileSync(join(outDir, name), css);
   console.log(`${outName}/${name}: ${css.length} bytes`);
 }
