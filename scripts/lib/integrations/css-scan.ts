@@ -57,7 +57,9 @@ function matchBrace(css: string, open: number): number {
   let depth = 0;
   for (let i = open; i < css.length; i++) {
     const ch = css[i] as string;
-    if (ch === "{") depth++;
+    // outside strings a backslash escapes the next character: .w-\[\{\] holds no brace
+    if (ch === "\\") i++;
+    else if (ch === "{") depth++;
     else if (ch === "}") {
       depth--;
       if (depth === 0) return i;
@@ -76,7 +78,10 @@ export function stripComments(text: string): string {
   let out = "";
   for (let i = 0; i < text.length; i++) {
     const ch = text[i] as string;
-    if (ch === "/" && text[i + 1] === "*") {
+    if (ch === "\\") {
+      out += text.slice(i, i + 2);
+      i++;
+    } else if (ch === "/" && text[i + 1] === "*") {
       i = skipComment(text, i) - 1;
       out += " ";
     } else if (ch === '"' || ch === "'") {
@@ -95,7 +100,8 @@ export function splitTopLevel(text: string, separator: string): string[] {
   let from = 0;
   for (let i = 0; i < text.length; i++) {
     const ch = text[i] as string;
-    if (ch === '"' || ch === "'") i = skipString(text, i) - 1;
+    if (ch === "\\") i++;
+    else if (ch === '"' || ch === "'") i = skipString(text, i) - 1;
     else if (ch === "(" || ch === "[" || ch === "{") depth++;
     else if (ch === ")" || ch === "]" || ch === "}") depth = Math.max(0, depth - 1);
     else if (ch === separator && depth === 0) {
@@ -132,7 +138,8 @@ export function scanStatements(css: string): Statement[] {
     let j = i;
     for (; j < css.length; j++) {
       const c = css[j] as string;
-      if (c === '"' || c === "'") j = skipString(css, j) - 1;
+      if (c === "\\") j++;
+      else if (c === '"' || c === "'") j = skipString(css, j) - 1;
       else if (c === "/" && css[j + 1] === "*") j = skipComment(css, j) - 1;
       else if (isUrlStart(css, j)) {
         const next = skipUrl(css, j);
