@@ -82,7 +82,7 @@ Extras are opt-in and never part of `pico.css` or `pico.classless.css`. Each one
 
 Rules for an extra:
 
-- Semantic HTML and ARIA first. At most one documented `data-*` hook where semantics cannot say it. No class is required, so the extra survives the classless build.
+- Semantic HTML and ARIA first. One `data-*` hook to opt in where semantics cannot say it, plus optional documented modifier hooks. No class is ever required, so the extra survives the classless build.
 - Tokens it needs are new `--pico-<extra>-*` custom properties at the top of its own file, declared on `:root, :host, [data-theme]` (same reason as `scheme.css`, see Light and dark). Everything else reuses the existing `--pico-*` tokens.
 - Logical properties for RTL, and motion that respects `prefers-reduced-motion`.
 - Newer features (popover, `@starting-style`, anchor positioning) only as progressive enhancement, with a usable fallback.
