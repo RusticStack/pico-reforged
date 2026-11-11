@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, test } from "vite-plus/test";
-import { EXTRAS, buildMatrix, compile, matrixNames } from "../../scripts/lib/compiler/index.ts";
+import { EXTRAS, compile, matrixNames } from "../../scripts/lib/compiler/index.ts";
 import { squash } from "./helpers.ts";
 
 const root = resolve(fileURLToPath(new URL("../../", import.meta.url)));
@@ -158,29 +158,13 @@ test("CLI: --extras adds the chosen extras and validates the names", () => {
   assert.deepEqual(layerOrder(readFileSync(join(dir, "c.css"), "utf8")), ORDER);
 });
 
-test("the matrix writes pico.extras and one standalone file per extra", async () => {
+// The written files, their banners and layers are checked on the one full matrix build in
+// cli.test.ts.
+test("the matrix names pico.extras and one standalone file per extra", () => {
   const names = matrixNames();
   assert.ok(names.includes("pico.extras.css") && names.includes("pico.extras.min.css"));
   for (const extra of EXTRAS) {
     assert.ok(names.includes(`extras/${extra}.css`) && names.includes(`extras/${extra}.min.css`));
   }
   assert.equal(names.length, 238 + 2 + EXTRAS.length * 2);
-  const out = join(dir, "matrix");
-  const written = await buildMatrix(out);
-  assert.equal(written.length, names.length);
-  const files = readdirSync(out, { recursive: true, withFileTypes: true }).filter((e) =>
-    e.isFile(),
-  );
-  assert.equal(files.length, names.length);
-  const all = readFileSync(join(out, "pico.extras.css"), "utf8");
-  assert.match(all, /^\/\*!\n \* Pico Reforged/);
-  assert.deepEqual(layerOrder(all), ORDER);
-  for (const extra of EXTRAS) {
-    const own = readFileSync(join(out, "extras", `${extra}.css`), "utf8");
-    assert.deepEqual(layerOrder(own), ORDER);
-  }
-  // The default files never carry an extras block.
-  for (const name of ["pico.css", "pico.classless.css", "pico.conditional.css"]) {
-    assert.doesNotMatch(readFileSync(join(out, name), "utf8"), /@layer pico\.extras\s*\{/);
-  }
-}, 300_000);
+});
