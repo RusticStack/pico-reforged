@@ -321,7 +321,7 @@ The default `targets` is the exported constant `DEFAULT_TARGETS` in `scripts/lib
 chrome >= 111, edge >= 111, firefox >= 128, safari >= 16.4, ios_saf >= 16.4
 ```
 
-This is the same floor as Tailwind CSS v4. There is no legacy support: no unlayered build and no fallback for browsers below it. The `targets` option and `--targets` still take any browserslist query for people who want something else. `targets: "modern"` selects `MODERN_TARGETS` (Baseline 2024), which keeps native nesting and `light-dark()` and makes `pico.min.css` 10% smaller raw and 3% smaller in brotli (see File size). Scope and purge flatten nesting first because they judge whole selectors. The full table is in `docs/browser-support.md`.
+This is the same floor as Tailwind CSS v4. There is no legacy support: no unlayered build and no fallback for browsers below it. The `targets` option and `--targets` still take any browserslist query for people who want something else. `targets: "modern"` selects `MODERN_TARGETS` (Baseline 2024), which keeps native nesting and `light-dark()` and makes `pico.min.css` 10% smaller raw and 2% smaller in brotli (see File size). Scope and purge flatten nesting first because they judge whole selectors. The full table is in `docs/browser-support.md`.
 
 | Feature                                  | Source uses                        | At the floor                                                                                       |
 | ---------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------- |
@@ -351,14 +351,14 @@ Sizes of the shipped minified files, banner included (raw / gzip -9 / brotli q11
 
 | File                       | v2.1.1                   | Before the size work     | Now                      | Now, `targets: "modern"` |
 | -------------------------- | ------------------------ | ------------------------ | ------------------------ | ------------------------ |
-| `pico.min.css`             | 83,319 / 11,654 / 10,097 | 80,106 / 12,013 / 10,533 | 80,995 / 12,152 / 10,695 | 72,759 / 11,852 / 10,462 |
-| `pico.classless.min.css`   | 71,040 / 10,323 / 8,964  | 69,625 / 10,962 / 9,635  | 70,681 / 11,090 / 9,792  | 63,395 / 10,856 / 9,597  |
-| `pico.conditional.min.css` | none                     | 83,580 / 12,250 / 10,688 | 83,961 / 12,322 / 10,809 | 81,125 / 12,220 / 10,727 |
-| `pico.extras.min.css`      | none                     | 44,846 / 7,385 / 6,560   | 47,062 / 7,657 / 6,809   | 39,259 / 7,330 / 6,546   |
+| `pico.min.css`             | 83,319 / 11,654 / 10,097 | 80,106 / 12,013 / 10,533 | 84,211 / 12,522 / 11,000 | 75,654 / 12,216 / 10,758 |
+| `pico.classless.min.css`   | 71,040 / 10,323 / 8,964  | 69,625 / 10,962 / 9,635  | 73,865 / 11,442 / 10,093 | 66,237 / 11,194 / 9,903  |
+| `pico.conditional.min.css` | none                     | 83,580 / 12,250 / 10,688 | 87,285 / 12,692 / 11,127 | 84,373 / 12,580 / 11,034 |
+| `pico.extras.min.css`      | none                     | 44,846 / 7,385 / 6,560   | 51,297 / 8,322 / 7,398   | 43,102 / 8,011 / 7,139   |
 
-"Now" includes the modern default look ([ADR 0002](adr/0002-modern-default-look.md)), which added about 4% gzipped to each file (`pico.min.css` was 77,969 / 11,663 / 10,281 before it). The budget for that change was 5%.
+"Now" includes the modern default look ([ADR 0002](adr/0002-modern-default-look.md)), which added about 4% gzipped to each file (`pico.min.css` was 77,969 / 11,663 / 10,281 before it). The budget for that change was 5%. This table used to show `pico.min.css` at 80,995 / 12,152 / 10,695, but 2.0.0 already shipped 82,796 / 12,371 / 10,870. Since 2.0.0, forced colors support, the badge solid color tokens and the small accessibility and RTL fixes added about 1% gzipped to `pico` and `classless` and 2% to `extras`. `test/size/size.test.ts` now fails when gzip of `pico`, `classless` or `extras` grows more than 2% over `test/size/baseline.json`.
 
-The v2.1.1 files are the ones published on npm (`@picocss/pico@2.1.1`). Against them the raw file is 3% smaller (classless 0.5%). Compressed it is larger: `pico` by 4% gzipped and 6% with brotli, classless by 7% and 9%. Pico Reforged also ships things v2.1.1 does not have: the popover module (about 400 bytes in brotli), anchor positioning, `interpolate-size`, `::details-content` and `@starting-style` blocks. The modern file is smaller because the compiler no longer lowers nesting and `light-dark()`. `pico.conditional` gains less from it because scope flattens nesting.
+The v2.1.1 files are the ones published on npm (`@picocss/pico@2.1.1`). Against them the raw file is 1% larger (classless 4%). Compressed it is larger too: `pico` by 7% gzipped and 9% with brotli, classless by 11% and 13%. Pico Reforged also ships things v2.1.1 does not have: the popover module (about 400 bytes in brotli), anchor positioning, `interpolate-size`, `::details-content` and `@starting-style` blocks. The modern file is smaller because the compiler no longer lowers nesting and `light-dark()`. `pico.conditional` gains less from it because scope flattens nesting.
 
 What the size work changed:
 

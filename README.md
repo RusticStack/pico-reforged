@@ -19,7 +19,7 @@ Write the markup, get a clean, accessible, themeable page. No classes required, 
 <p align="center">
   <a href="https://www.npmjs.com/package/@rusticstack/pico-reforged"><img src="https://img.shields.io/npm/v/@rusticstack/pico-reforged?style=flat-square&label=npm&color=1779E1" alt="npm version"></a>
   <a href="https://www.jsdelivr.com/package/npm/@rusticstack/pico-reforged"><img src="https://img.shields.io/jsdelivr/npm/hm/@rusticstack/pico-reforged?style=flat-square&color=2A2A30" alt="jsDelivr hits per month"></a>
-  <img src="https://img.shields.io/badge/pico.min.css-12.2_kB_gzipped-2A2A30?style=flat-square" alt="pico.min.css is 12.2 kB gzipped">
+  <img src="https://img.shields.io/badge/pico.min.css-12.5_kB_gzipped-2A2A30?style=flat-square" alt="pico.min.css is 12.5 kB gzipped">
   <a href="https://github.com/RusticStack/pico-reforged/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/RusticStack/pico-reforged/ci.yml?branch=main&style=flat-square&label=CI" alt="CI status"></a>
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-2A2A30?style=flat-square" alt="MIT license"></a>
 </p>
@@ -51,7 +51,7 @@ It is a drop-in for v2.1.1 markup with a modern default look. The classes, attri
 - Vite and PostCSS integrations that purge unused rules in production, safely by default.
 - An opt-in `modern` target (Chrome and Edge 123, Firefox 128, Safari 17.5) that ships native nesting and `light-dark()` for a smaller file.
 - Files for AI agents: `llms.txt` on the site, an agent skill, `AGENTS.md`, a component manifest and DTCG design tokens.
-- Size: the minified `pico.min.css` is 81 kB raw, 12.2 kB gzipped and 10.7 kB with brotli. v2.1.1 minified is 83 kB, 11.7 kB and 10.1 kB, so the raw file is 3% smaller and the compressed file 4% to 6% larger, with the popover and anchor positioning patterns and the new look included. The classless file is 70.7 kB raw against 71 kB, 11.1 kB gzipped against 10.3 kB. Details are in [docs/architecture.md](docs/architecture.md#file-size).
+- Size: the minified `pico.min.css` is 84.2 kB raw, 12.5 kB gzipped and 11 kB with brotli. v2.1.1 minified is 83.3 kB, 11.7 kB and 10.1 kB, so the raw file is 1% larger and the compressed file 7% to 9% larger, with the popover and anchor positioning patterns, forced colors support and the new look included. The classless file is 73.9 kB raw against 71 kB, 11.4 kB gzipped against 10.3 kB. Details are in [docs/architecture.md](docs/architecture.md#file-size).
 
 ## Install
 
@@ -203,7 +203,7 @@ The ready-made files are already small, and a build can make yours smaller:
 
 - The minified files merge sibling selectors into `:is()` (only when specificity stays the same) and write each OKLCH color with the shortest digits that give the same 8-bit sRGB value.
 - With the Vite or PostCSS plugin, unused rules are dropped. On the example Vite app (`examples/vite`, jade theme and the badge extra, minified, counting only the Pico part of the stylesheet) the default safe purge takes it from 81,642 to 65,564 bytes, about 20% less, and `purge: aggressive` to 33,311 bytes, about 59% less. A page that uses more of Pico drops less: on the kitchen sink test page safe saves about 1%.
-- `--targets modern` (or `targets: "modern"` in the config) skips the lowering for older browsers: `pico.min.css` drops to 70 kB raw and 10 kB with brotli, classless to 60 kB and 9.1 kB.
+- `--targets modern` (or `targets: "modern"` in the config) skips the lowering for older browsers: `pico.min.css` drops to 75.7 kB raw and 10.8 kB with brotli, classless to 66.2 kB and 9.9 kB.
 - When you host the files yourself, precompress them with brotli at quality 11. Most CDNs compress on the fly at a lower level, which costs about 1 kB more.
 
 ## Browser support

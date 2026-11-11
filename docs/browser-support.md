@@ -29,10 +29,10 @@ There is no unlayered build and no polyfill. If you need an older browser, pass 
 
 | File               | Default floor            | Modern                   |
 | ------------------ | ------------------------ | ------------------------ |
-| `pico`             | 77,969 / 11,663 / 10,281 | 69,917 / 11,275 / 9,957  |
-| `pico.classless`   | 67,467 / 10,609 / 9,396  | 60,484 / 10,274 / 9,105  |
-| `pico.extras`      | 44,864 / 7,348 / 6,527   | 37,391 / 6,927 / 6,180   |
-| `pico.conditional` | 80,881 / 11,837 / 10,379 | 78,110 / 11,652 / 10,228 |
+| `pico`             | 84,211 / 12,522 / 11,000 | 75,654 / 12,216 / 10,758 |
+| `pico.classless`   | 73,865 / 11,442 / 10,093 | 66,237 / 11,194 / 9,903  |
+| `pico.extras`      | 51,297 / 8,322 / 7,398   | 43,102 / 8,011 / 7,139   |
+| `pico.conditional` | 87,285 / 12,692 / 11,127 | 84,373 / 12,580 / 11,034 |
 
 Builds with `scope` or `purge` flatten nesting first, because those passes judge whole selectors, so `pico.conditional` only gains the `light-dark()` part. Selector factoring skips rules that still contain nesting.
 
