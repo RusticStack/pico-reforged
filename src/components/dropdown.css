@@ -220,3 +220,11 @@ details.dropdown[open] {
 label > details.dropdown {
   margin-top: calc(var(--pico-spacing) * 0.25);
 }
+
+/* Forced colors drop the box-shadow focus ring */
+@media (forced-colors: active) {
+  details.dropdown > summary:not([role]):focus-visible {
+    outline: var(--pico-outline-width) solid Highlight;
+    outline-offset: 0;
+  }
+}

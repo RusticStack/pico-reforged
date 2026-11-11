@@ -141,6 +141,22 @@
   }
 }
 
+/* Forced colors drop the shared ring (a box-shadow), and the buttons have no outline */
+@media (forced-colors: active) {
+  :where([role="search"], [role="group"]):where(
+    :has(
+      button:focus-visible,
+      [type="submit"]:focus-visible,
+      [type="reset"]:focus-visible,
+      [type="button"]:focus-visible,
+      [role="button"]:focus-visible
+    )
+  ) {
+    outline: var(--pico-outline-width) solid Highlight;
+    outline-offset: var(--pico-outline-width);
+  }
+}
+
 /* Pill ends for search. These come last so they win over the flat corners above. */
 [role="search"] {
   & > *:first-child {
