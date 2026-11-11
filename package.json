@@ -90,7 +90,8 @@
     "check": "vp check",
     "typecheck": "tsc -p .",
     "pack": "vp pack",
-    "prepack": "pnpm run build && vp pack"
+    "prepack": "pnpm run build && vp pack",
+    "prepublishOnly": "pnpm check && pnpm test && pnpm test:api"
   },
   "keywords": [
     "css",

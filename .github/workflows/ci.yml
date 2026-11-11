@@ -26,3 +26,26 @@ jobs:
       - run: pnpm check
       - run: pnpm test
       - run: pnpm test:api
+
+  visual:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      # Reference and new CSS render in the same browser on this machine, so fonts cancel out.
+      - run: pnpm test:visual
+      - run: pnpm test:extras
+      - run: pnpm test:contrast
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-report
+          path: |
+            test/visual/report
+            test/visual/extras-report
