@@ -406,3 +406,23 @@ textarea {
 label > :where(input, select, textarea) {
   margin-block-start: calc(var(--pico-spacing) * 0.25);
 }
+
+/* Forced colors drop the focus ring (a box-shadow) and the focus border color */
+@media (forced-colors: active) {
+  :where(
+    input:not(
+      [type="submit"],
+      [type="button"],
+      [type="reset"],
+      [type="checkbox"],
+      [type="radio"],
+      [type="range"],
+      [type="file"]
+    ),
+    select,
+    textarea
+  ):focus {
+    outline: var(--pico-outline-width) solid Highlight;
+    outline-offset: 0;
+  }
+}

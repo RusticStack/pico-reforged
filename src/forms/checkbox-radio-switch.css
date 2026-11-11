@@ -173,3 +173,28 @@ label:has([type="checkbox"], [type="radio"]) {
 [type="checkbox"][role="switch"]:checked:focus[aria-invalid="true"] {
   --pico-border-color: var(--pico-form-element-invalid-border-color);
 }
+
+/* Forced colors replace the checked fill and the thumb color, so system colors mark the state */
+@media (forced-colors: active) {
+  :where([type="checkbox"]):is(:checked, :indeterminate),
+  :where([type="radio"]):checked {
+    border-color: Highlight;
+  }
+
+  :where([type="checkbox"]):is(:checked, :indeterminate) {
+    background-color: Highlight;
+  }
+
+  [type="checkbox"][role="switch"]:checked {
+    border-color: Highlight;
+    background-color: Highlight;
+  }
+
+  [type="checkbox"][role="switch"]::before {
+    background-color: ButtonText;
+  }
+
+  [type="checkbox"][role="switch"]:checked::before {
+    background-color: HighlightText;
+  }
+}

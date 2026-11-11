@@ -53,7 +53,7 @@ Everything else under `src/` is hand-written. A new module or extra needs an ent
 - Core modules go in `pico.core` in the v2.1.1 order. Extras go in `pico.extras`, after core. Color utilities go in `pico.utilities`.
 - Colors are OKLCH. Light and dark values are written once with `light-dark()`. Tokens are declared on `:root, :host, [data-theme]` so nested `data-theme` works. Modules use tokens, not raw colors.
 - Keep specificity at the v2.1.1 level or lower (`:where()`), nest no deeper than three levels, and use logical properties so RTL works without overrides.
-- Semantic HTML and ARIA first. An extra uses at most one documented `data-*` hook and needs no class, so it works in the classless build. Motion respects `prefers-reduced-motion`.
+- Semantic HTML and ARIA first. An extra uses one `data-*` hook to opt in where semantics cannot say it, plus optional documented modifier hooks. No class is ever required, so it works in the classless build. Motion respects `prefers-reduced-motion`.
 - Each module starts with a one-line comment naming what it styles. The manifest reads that line as the summary, so keep it accurate.
 - Every public selector, class, attribute and `--pico-*` variable of v2.1.1 stays unless `docs/migration.md` lists the removal. `test/api/baseline.json` holds that surface and `pnpm test:api` checks it. A removal also goes into `test/api/removed.json`, the allowlist the check reads; `pnpm test` fails when an entry there is missing from `docs/migration.md`.
 

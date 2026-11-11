@@ -80,6 +80,13 @@
 /* One shared focus ring on the group instead of one per control */
 [role="search"],
 [role="group"] {
+  /* Reset looks secondary. A rule of its own, so purge can still drop the .secondary one. */
+  &:has([type="reset"]:focus-visible) {
+    --pico-group-box-shadow-focus-with-button:
+      0 0 0 var(--pico-outline-width) var(--pico-background-color),
+      0 0 0 calc(var(--pico-outline-width) * 2) var(--pico-secondary-focus);
+  }
+
   &:has(
     button.secondary:focus-visible,
     [type="submit"].secondary:focus-visible,
@@ -106,7 +113,8 @@
     button:focus-visible,
     [type="submit"]:focus-visible,
     [type="button"]:focus-visible,
-    [role="button"]:focus-visible
+    [role="button"]:focus-visible,
+    [type="reset"]:focus-visible
   ) {
     --pico-group-box-shadow: var(--pico-group-box-shadow-focus-with-button);
 
@@ -116,7 +124,7 @@
     }
   }
 
-  &:has(input:not([type="submit"], [type="button"]):focus, select:focus) {
+  &:has(input:not([type="submit"], [type="button"], [type="reset"]):focus, select:focus) {
     --pico-group-box-shadow: var(--pico-group-box-shadow-focus-with-input);
 
     & button,
@@ -136,6 +144,22 @@
   & [role="button"]:focus {
     outline: none;
     box-shadow: none;
+  }
+}
+
+/* Forced colors drop the shared ring (a box-shadow), and the buttons have no outline */
+@media (forced-colors: active) {
+  :where([role="search"], [role="group"]):where(
+    :has(
+      button:focus-visible,
+      [type="submit"]:focus-visible,
+      [type="reset"]:focus-visible,
+      [type="button"]:focus-visible,
+      [role="button"]:focus-visible
+    )
+  ) {
+    outline: var(--pico-outline-width) solid Highlight;
+    outline-offset: var(--pico-outline-width);
   }
 }
 

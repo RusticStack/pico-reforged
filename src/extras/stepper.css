@@ -183,6 +183,38 @@ ol[data-stepper="vertical"] > li {
   }
 }
 
+/* Forced colors drop the marker rings (box-shadows) and the fills, system colors take over */
+@media (forced-colors: active) {
+  ol[data-stepper] > li {
+    --_fc-outline: var(--pico-stepper-line-width) solid CanvasText;
+    --_fc-offset: calc(var(--pico-stepper-line-width) * -1);
+    --_fc-adjust: auto;
+    --_line-color: CanvasText;
+
+    /* No text backplate, so the hidden number stays hidden under the check mark */
+    &:has(~ li[aria-current="step"], ~ li > [aria-current="step"]) {
+      --_fc-adjust: none;
+      --_marker-background: Highlight;
+      --_marker-color: Highlight;
+      --_line-color: Highlight;
+      --_fc-outline: var(--pico-stepper-line-width) solid Highlight;
+    }
+
+    &[aria-current="step"],
+    &:has(> [aria-current="step"]) {
+      --_fc-outline: var(--pico-stepper-ring-width) solid Highlight;
+      --_fc-offset: var(--pico-stepper-ring-width);
+    }
+
+    & > [aria-hidden="true"],
+    & > a > [aria-hidden="true"] {
+      outline: var(--_fc-outline);
+      outline-offset: var(--_fc-offset);
+      forced-color-adjust: var(--_fc-adjust);
+    }
+  }
+}
+
 @media (width < 576px) {
   ol[data-stepper="responsive"] {
     flex-direction: column;

@@ -283,7 +283,7 @@ Accessibility:
 
 - Use data with a value attribute for counters. Add a visually hidden span in front for context, such as "unread messages: ".
 
-Sets on its own elements: `--pico-badge-background-color`, `--pico-badge-color`, `--pico-badge-danger-background-color`, `--pico-badge-danger-color`, `--pico-badge-ring-color`, `--pico-badge-success-background-color`, `--pico-badge-success-color`, `--pico-badge-warning-background-color`, `--pico-badge-warning-color`.
+Sets on its own elements: `--pico-badge-background-color`, `--pico-badge-color`, `--pico-badge-danger-background-color`, `--pico-badge-danger-color`, `--pico-badge-danger-solid-background-color`, `--pico-badge-danger-solid-color`, `--pico-badge-ring-color`, `--pico-badge-success-background-color`, `--pico-badge-success-color`, `--pico-badge-success-solid-background-color`, `--pico-badge-success-solid-color`, `--pico-badge-warning-background-color`, `--pico-badge-warning-color`, `--pico-badge-warning-solid-background-color`, `--pico-badge-warning-solid-color`.
 
 Reads: `--pico-contrast-background`, `--pico-contrast-inverse`, `--pico-primary`, `--pico-primary-background`, `--pico-primary-inverse`, `--pico-secondary-background`, `--pico-secondary-inverse`.
 

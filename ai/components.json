@@ -2016,11 +2016,17 @@
           "--pico-badge-color",
           "--pico-badge-danger-background-color",
           "--pico-badge-danger-color",
+          "--pico-badge-danger-solid-background-color",
+          "--pico-badge-danger-solid-color",
           "--pico-badge-ring-color",
           "--pico-badge-success-background-color",
           "--pico-badge-success-color",
+          "--pico-badge-success-solid-background-color",
+          "--pico-badge-success-solid-color",
           "--pico-badge-warning-background-color",
-          "--pico-badge-warning-color"
+          "--pico-badge-warning-color",
+          "--pico-badge-warning-solid-background-color",
+          "--pico-badge-warning-solid-color"
         ]
       },
       "js": null
